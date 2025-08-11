@@ -6,11 +6,11 @@
 // Debug flag for development logging
 const DEBUG = false;
 
-// Types for order items
+// Types for order items - simplified based on actual API structure
 type OrderItem = {
-  id: number | string;
-  order_number?: string | number;
-  locations?: any[];
+  id: number | string;          // Required: the unique identifier we need
+  order_number?: string | number; // Optional: for matching against requested orders
+  [key: string]: any;           // Allow any other fields the API might return
 };
 
 // API response structure

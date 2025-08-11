@@ -8,9 +8,9 @@ const DEBUG = false;
 
 // Types for order items - simplified based on actual API structure
 type OrderItem = {
-  id: number | string;          // Required: the unique identifier we need
+  id: number | string; // Required: the unique identifier we need
   order_number?: string | number; // Optional: for matching against requested orders
-  [key: string]: any;           // Allow any other fields the API might return
+  [key: string]: any; // Allow any other fields the API might return
 };
 
 // API response structure
@@ -231,7 +231,9 @@ function processBatchResults(
   );
 
   if (DEBUG && notFoundForBatch.length > 0) {
-    console.log(`❌ Not found in this batch: ${notFoundForBatch.length} order numbers`);
+    console.log(
+      `❌ Not found in this batch: ${notFoundForBatch.length} order numbers`,
+    );
   }
 
   return { ids, notFoundForBatch };

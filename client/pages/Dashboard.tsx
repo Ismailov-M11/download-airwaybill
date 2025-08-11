@@ -115,7 +115,10 @@ const Dashboard: React.FC = () => {
       addLog(`Order numbers entered: ${normalized.length}`);
       addLog("Starting order search...");
 
-      const results = await searchAndExtractIdsOnce(orderNumbers, idToken);
+      const results = await collectIdsPaged(orderNumbers, idToken, {
+        batchSize: 450,
+        concurrency: 6
+      });
 
       setFoundIds(results.ids);
       setNotFoundOrders(results.notFound);

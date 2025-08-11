@@ -197,15 +197,15 @@ async function searchBatchWithPagination(
 }
 
 /**
- * Process batch results: extract all IDs from list, compute not found
+ * Process batch results: extract all IDs from list
  * @param items - All collected items from API
- * @param requestedSet - Set of requested order numbers
- * @returns Processed results
+ * @param requestedSet - Set of requested order numbers (unused now, kept for compatibility)
+ * @returns Processed results with IDs only
  */
 function processBatchResults(
   items: OrderItem[],
   requestedSet: Set<string>,
-): { ids: number[]; notFoundForBatch: string[] } {
+): { ids: number[] } {
   if (DEBUG) {
     console.log(`📦 Processing ${items.length} items from API response`);
   }
@@ -219,24 +219,7 @@ function processBatchResults(
     console.log(`🔢 Extracted ${ids.length} valid IDs from response`);
   }
 
-  // Compute not found by checking which requested order numbers have corresponding items
-  const foundNumbers = new Set(
-    items
-      .filter((item) => item.order_number !== undefined)
-      .map((item) => String(item.order_number)),
-  );
-
-  const notFoundForBatch = Array.from(requestedSet).filter(
-    (num) => !foundNumbers.has(num),
-  );
-
-  if (DEBUG && notFoundForBatch.length > 0) {
-    console.log(
-      `❌ Not found in this batch: ${notFoundForBatch.length} order numbers`,
-    );
-  }
-
-  return { ids, notFoundForBatch };
+  return { ids };
 }
 
 /**
@@ -335,17 +318,20 @@ export async function collectIdsPaged(
 
   if (DEBUG) {
     console.log(
-      `🎯 Final results: ${uniqueIds.length} unique IDs found, ${uniqueNotFound.length} not found`,
+      `🎯 Final results: ${uniqueIds.length} unique IDs found, ${notFound.length} not found`,
     );
     console.log(
       `📋 Encoded IDs: ${idsEncoded.substring(0, 100)}${idsEncoded.length > 100 ? "..." : ""}`,
     );
+    if (notFound.length > 0) {
+      console.log(`❌ Not found globally: ${notFound.slice(0, 5).join(', ')}${notFound.length > 5 ? ` ... and ${notFound.length - 5} more` : ''}`);
+    }
   }
 
   return {
     ids: uniqueIds,
     idsEncoded,
-    notFound: uniqueNotFound,
+    notFound,
   };
 }
 

@@ -67,8 +67,9 @@ export default function ViewPdfButton({
         `📄 Opening PDF with ${idsEncoded.split("%2C").length} orders (${sameOrigin ? "same-origin" : "cross-origin"} mode)`,
       );
 
-      // Open PDF using the appropriate method
-      await openPdfInNewTab(idsEncoded, idToken, useSafariFallback);
+      // Open PDF using the hardened proxy with debug headers
+      // Note: wBh parameter can be undefined - server will use env variable if available
+      await openPdfInNewTab(idsEncoded, idToken, useSafariFallback, undefined);
 
       // Success callback
       onSuccess?.();

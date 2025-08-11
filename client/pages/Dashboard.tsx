@@ -53,6 +53,24 @@ const Dashboard: React.FC = () => {
     setIdsEncoded("");
   };
 
+  const previewPdf = (idsStr: string): void => {
+    // Open PDF in new window/tab for preview
+    const params = new URLSearchParams({
+      ids: idsStr,
+      token: idToken,
+    });
+    const url = `/api/pdf/preview?${params.toString()}`;
+
+    // Open in new window
+    const newWindow = window.open(url, '_blank', 'width=1000,height=700');
+    if (newWindow) {
+      newWindow.focus();
+      addLog(`PDF preview opened in new window`);
+    } else {
+      addLog(`❌ Unable to open preview window - please check popup settings`);
+    }
+  };
+
   const downloadPdf = async (
     idsStr: string,
     filename: string,

@@ -29,21 +29,32 @@ export function openPdfInNewTabDirect(idsEncoded: string): void {
 /**
  * Opens PDF via server proxy in new tab (cross-origin approach)
  * Works when frontend is on different domain than admin.fargo.uz
- * @param idsEncoded - URL-encoded comma-separated IDs
+ * @param idsEncoded - URL-encoded comma-separated IDs (already encoded as id1%2Cid2%2C...)
  * @param idToken - JWT token for authentication
+ * @param wBh - Optional w-bh cookie value (can be omitted if server reads from env)
  */
 export async function openPdfInNewTabViaProxy(
   idsEncoded: string,
   idToken: string,
+  wBh?: string,
 ): Promise<void> {
-  // Fetch PDF through our server proxy
-  // Note: idsEncoded is already properly encoded (id1%2Cid2%2C...), do NOT encode again
+  // Fetch PDF through our hardened server proxy
+  // IMPORTANT: idsEncoded is already properly encoded, do NOT re-encode with encodeURIComponent
   const response = await fetch(`/api/pdf?ids=${idsEncoded}`, {
     headers: {
       "X-Auth-Token": idToken,
+      ...(wBh && { "X-BH": wBh }), // Include w-bh header if provided
       Accept: "application/pdf",
     },
   });
+
+  // Inspect debug headers (visible in DevTools → Network → Response Headers)
+  console.log("🔍 PDF Debug Info:");
+  console.log("  X-Dbg-Url:", response.headers.get("X-Dbg-Url"));
+  console.log("  X-Dbg-Ids:", response.headers.get("X-Dbg-Ids"));
+  console.log("  X-Dbg-Upstream-Status:", response.headers.get("X-Dbg-Upstream-Status"));
+  console.log("  X-Dbg-Bytes:", response.headers.get("X-Dbg-Bytes"));
+  console.log("  X-Dbg-Time:", response.headers.get("X-Dbg-Time"));
 
   // Handle authentication errors
   if (response.status === 401) {
@@ -57,6 +68,11 @@ export async function openPdfInNewTabViaProxy(
 
   // Get PDF as blob
   const blob = await response.blob();
+
+  // Quick sanity check for PDF content
+  if (blob.size < 1000) {
+    console.warn("⚠️ PDF blob is very small, might be empty or error page");
+  }
 
   // Create blob URL for viewing
   const blobUrl = URL.createObjectURL(blob);
@@ -103,6 +119,11 @@ export async function openPdfInNewTabSafariFallback(
         },
       });
 
+      // Log debug info for Safari fallback
+      console.log("🍎 Safari Fallback Debug:");
+      console.log("  X-Dbg-Upstream-Status:", response.headers.get("X-Dbg-Upstream-Status"));
+      console.log("  X-Dbg-Bytes:", response.headers.get("X-Dbg-Bytes"));
+
       if (response.status === 401) {
         newWindow.close();
         throw new Error("UNAUTHORIZED_401");
@@ -135,11 +156,13 @@ export async function openPdfInNewTabSafariFallback(
  * @param idsEncoded - URL-encoded comma-separated IDs
  * @param idToken - JWT token for authentication
  * @param useSafariFallback - Use Safari/iOS compatible approach (default: false)
+ * @param wBh - Optional w-bh cookie value for enhanced compatibility
  */
 export async function openPdfInNewTab(
   idsEncoded: string,
   idToken: string,
   useSafariFallback = false,
+  wBh?: string,
 ): Promise<void> {
   if (!idsEncoded) {
     throw new Error("No IDs provided");
@@ -158,8 +181,8 @@ export async function openPdfInNewTab(
     setAuthCookie(idToken);
     openPdfInNewTabDirect(idsEncoded);
   } else {
-    // Cross-origin approach: use server proxy
-    await openPdfInNewTabViaProxy(idsEncoded, idToken);
+    // Cross-origin approach: use hardened server proxy
+    await openPdfInNewTabViaProxy(idsEncoded, idToken, wBh);
   }
 }
 

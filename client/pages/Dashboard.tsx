@@ -53,7 +53,6 @@ const Dashboard: React.FC = () => {
     setIdsEncoded("");
   };
 
-
   const downloadPdf = async (
     idsStr: string,
     filename: string,
@@ -61,7 +60,7 @@ const Dashboard: React.FC = () => {
     // Use server proxy to handle cross-domain cookies
     const params = new URLSearchParams({
       ids: idsStr,
-      token: idToken
+      token: idToken,
     });
     const url = `/api/pdf?${params.toString()}`;
 
@@ -77,9 +76,14 @@ const Dashboard: React.FC = () => {
       // Try to get error details from JSON response
       try {
         const errorData = await response.json();
-        throw new Error(errorData.error || `Download error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          errorData.error ||
+            `Download error: ${response.status} ${response.statusText}`,
+        );
       } catch {
-        throw new Error(`Download error: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Download error: ${response.status} ${response.statusText}`,
+        );
       }
     }
 
@@ -119,7 +123,7 @@ const Dashboard: React.FC = () => {
 
       const results = await collectIdsPaged(orderNumbers, idToken, {
         batchSize: 450,
-        concurrency: 6
+        concurrency: 6,
       });
 
       setFoundIds(results.ids);
@@ -176,7 +180,9 @@ const Dashboard: React.FC = () => {
         .slice(0, 19);
       const filename = `airwaybill_${timestamp}.pdf`;
 
-      addLog(`Downloading PDF with ${foundIds.length} orders via server proxy...`);
+      addLog(
+        `Downloading PDF with ${foundIds.length} orders via server proxy...`,
+      );
 
       await downloadPdf(idsEncoded, filename);
 

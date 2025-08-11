@@ -18,7 +18,7 @@ const Login: React.FC = () => {
 
     const success = await login(username, password);
     if (!success) {
-      setError('Неверные учетные данные Shipox');
+      setError('Invalid Shipox credentials');
     }
   };
 
@@ -33,38 +33,38 @@ const Login: React.FC = () => {
               </svg>
             </div>
             <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Авианакладные Shipox
+              Shipox Airwaybills
             </CardTitle>
             <CardDescription className="text-gray-600">
-              Введите учетные данные Shipox для доступа к системе
+              Enter your Shipox credentials to access the system
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="username" className="text-sm font-medium text-gray-700">
-                  Логин Shipox
+                  Shipox Username
                 </Label>
                 <Input
                   id="username"
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Введите логин Shipox"
+                  placeholder="Enter your Shipox username"
                   className="h-11 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                   required
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-                  Пароль Shipox
+                  Shipox Password
                 </Label>
                 <Input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Введите пароль Shipox"
+                  placeholder="Enter your Shipox password"
                   className="h-11 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                   required
                 />
@@ -82,7 +82,7 @@ const Login: React.FC = () => {
                 type="submit" 
                 className="w-full h-11 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
               >
-                Войти в систему
+                Log in to System
               </Button>
             </form>
             

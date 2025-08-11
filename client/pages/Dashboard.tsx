@@ -53,20 +53,44 @@ const Dashboard: React.FC = () => {
   };
 
   const previewPdf = (idsStr: string): void => {
-    // Open PDF in new window/tab for preview
-    const params = new URLSearchParams({
-      ids: idsStr,
-      token: idToken,
-    });
-    const url = `/api/pdf/preview?${params.toString()}`;
+    try {
+      // Clear any existing errors
+      setError('');
 
-    // Open in new window
-    const newWindow = window.open(url, "_blank", "width=1000,height=700");
-    if (newWindow) {
-      newWindow.focus();
-      addLog(`PDF preview opened in new window`);
-    } else {
-      addLog(`❌ Unable to open preview window - please check popup settings`);
+      if (!idsStr || !idToken) {
+        setError('Missing PDF data or authentication token');
+        addLog('❌ Cannot open PDF: missing data or token');
+        return;
+      }
+
+      // Open PDF in new window/tab for preview
+      const params = new URLSearchParams({
+        ids: idsStr,
+        token: idToken,
+      });
+      const url = `/api/pdf/preview?${params.toString()}`;
+
+      addLog(`Opening PDF with ${foundIds.length} orders...`);
+
+      // Open in new window
+      const newWindow = window.open(url, "_blank", "width=1000,height=700,scrollbars=yes,resizable=yes");
+      if (newWindow) {
+        newWindow.focus();
+        addLog(`✅ PDF opened in new window`);
+
+        // Handle window load errors
+        newWindow.addEventListener('error', () => {
+          addLog('❌ Error loading PDF in new window');
+          setError('Failed to load PDF - try again or check if popup blocker is enabled');
+        });
+      } else {
+        addLog(`❌ Unable to open preview window - popup blocked`);
+        setError('Unable to open PDF window - please allow popups for this site');
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error opening PDF';
+      addLog(`❌ Error: ${message}`);
+      setError(message);
     }
   };
 

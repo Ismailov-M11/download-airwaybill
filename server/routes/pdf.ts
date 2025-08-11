@@ -2,7 +2,7 @@ import { RequestHandler } from "express";
 
 /**
  * PDF preview endpoint - serves PDF inline for viewing in browser
- * Enhanced with timeout handling to prevent 504 errors
+ * Enhanced with timeout handling and X-Auth-Token header support
  */
 export const handlePdfPreview: RequestHandler = async (req, res) => {
   // Set timeout to prevent 504 errors
@@ -18,7 +18,8 @@ export const handlePdfPreview: RequestHandler = async (req, res) => {
 
   try {
     const ids = String(req.query.ids || "");
-    const token = String(req.query.token || "");
+    // Support both query param and header for token
+    const token = String(req.query.token || req.headers['x-auth-token'] || "");
 
     // Validate required parameters
     if (!ids) {
@@ -29,7 +30,10 @@ export const handlePdfPreview: RequestHandler = async (req, res) => {
 
     if (!token) {
       clearTimeout(timeoutId);
-      res.status(400).json({ error: "Missing token parameter" });
+      res.status(400).json({ 
+        error: "Missing token parameter",
+        suggestion: "Provide token as query param (?token=...) or X-Auth-Token header"
+      });
       return;
     }
 
@@ -160,7 +164,7 @@ export const handlePdfPreview: RequestHandler = async (req, res) => {
 
 /**
  * PDF proxy endpoint to handle cross-domain cookie issues
- * Enhanced with timeout handling
+ * Enhanced with timeout handling and X-Auth-Token header support
  */
 export const handlePdfProxy: RequestHandler = async (req, res) => {
   // Set timeout to prevent 504 errors
@@ -176,7 +180,8 @@ export const handlePdfProxy: RequestHandler = async (req, res) => {
 
   try {
     const ids = String(req.query.ids || "");
-    const token = String(req.query.token || "");
+    // Support both query param and header for token
+    const token = String(req.query.token || req.headers['x-auth-token'] || "");
 
     // Validate required parameters
     if (!ids) {
@@ -187,7 +192,10 @@ export const handlePdfProxy: RequestHandler = async (req, res) => {
 
     if (!token) {
       clearTimeout(timeoutId);
-      res.status(400).json({ error: "Missing token parameter" });
+      res.status(400).json({ 
+        error: "Missing token parameter",
+        suggestion: "Provide token as query param (?token=...) or X-Auth-Token header"
+      });
       return;
     }
 

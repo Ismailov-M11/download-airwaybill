@@ -173,9 +173,6 @@ const Dashboard: React.FC = () => {
     setError("");
 
     try {
-      addLog("Setting authorization cookie...");
-      setAuthCookie(idToken);
-
       const timestamp = new Date()
         .toISOString()
         .replace(/[:.]/g, "-")

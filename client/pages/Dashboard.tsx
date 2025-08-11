@@ -176,7 +176,7 @@ const Dashboard: React.FC = () => {
         .slice(0, 19);
       const filename = `airwaybill_${timestamp}.pdf`;
 
-      addLog(`Downloading PDF with ${foundIds.length} orders...`);
+      addLog(`Downloading PDF with ${foundIds.length} orders via server proxy...`);
 
       await downloadPdf(idsEncoded, filename);
 

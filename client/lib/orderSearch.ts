@@ -197,7 +197,7 @@ async function searchBatchWithPagination(
 }
 
 /**
- * Process batch results: filter, extract IDs, compute not found
+ * Process batch results: extract all IDs from list, compute not found
  * @param items - All collected items from API
  * @param requestedSet - Set of requested order numbers
  * @returns Processed results
@@ -206,36 +206,33 @@ function processBatchResults(
   items: OrderItem[],
   requestedSet: Set<string>,
 ): { ids: number[]; notFoundForBatch: string[] } {
-  // Filter elements like in existing logic
-  const filtered = items.filter((item) => {
-    // Must have locations (array, even empty [] is ok)
-    if (!Array.isArray(item.locations)) return false;
-
-    // Must have order_number
-    if (item.order_number === undefined) return false;
-
-    // Must be one of the requested numbers
-    if (!requestedSet.has(String(item.order_number))) return false;
-
-    return true;
-  });
-
   if (DEBUG) {
-    console.log(`✅ After filtering: ${filtered.length} orders match criteria`);
+    console.log(`📦 Processing ${items.length} items from API response`);
   }
 
-  // Extract IDs (convert to number, filter invalid)
-  const ids = filtered
+  // Extract all IDs from the list (no filtering needed, just take all id fields)
+  const ids = items
     .map((item) => Number(item.id))
-    .filter((n) => Number.isFinite(n));
+    .filter((n) => Number.isFinite(n)); // Only filter out invalid numbers
 
-  // Compute not found for this batch
+  if (DEBUG) {
+    console.log(`🔢 Extracted ${ids.length} valid IDs from response`);
+  }
+
+  // Compute not found by checking which requested order numbers have corresponding items
   const foundNumbers = new Set(
-    filtered.map((item) => String(item.order_number)),
+    items
+      .filter((item) => item.order_number !== undefined)
+      .map((item) => String(item.order_number)),
   );
+
   const notFoundForBatch = Array.from(requestedSet).filter(
     (num) => !foundNumbers.has(num),
   );
+
+  if (DEBUG && notFoundForBatch.length > 0) {
+    console.log(`❌ Not found in this batch: ${notFoundForBatch.length} order numbers`);
+  }
 
   return { ids, notFoundForBatch };
 }

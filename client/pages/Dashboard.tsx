@@ -53,7 +53,6 @@ const Dashboard: React.FC = () => {
     setIdsEncoded("");
   };
 
-
   // Event handlers
   const handleSearchOrders = async () => {
     if (!idToken) {
@@ -242,7 +241,9 @@ const Dashboard: React.FC = () => {
                     addLog(`❌ PDF Error: ${error}`);
                   }}
                   onSuccess={() => {
-                    addLog(`✅ PDF opened successfully with ${foundIds.length} orders`);
+                    addLog(
+                      `✅ PDF opened successfully with ${foundIds.length} orders`,
+                    );
                   }}
                 >
                   Download

@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { 
-  openPdfInNewTab, 
-  needsSafariFallback, 
-  SAME_ORIGIN 
+import {
+  openPdfInNewTab,
+  needsSafariFallback,
+  SAME_ORIGIN,
 } from "@/lib/pdfViewer";
 
 export type ViewPdfButtonProps = {
@@ -37,7 +37,7 @@ export default function ViewPdfButton({
   const onClick = async () => {
     // Clear previous errors
     setError(null);
-    
+
     // Validate inputs
     if (!idsEncoded) {
       const errorMsg = "No IDs provided.";
@@ -58,22 +58,23 @@ export default function ViewPdfButton({
 
       // Detect if we need Safari fallback
       const useSafariFallback = needsSafariFallback();
-      
+
       if (useSafariFallback) {
         console.log("🍎 Using Safari/iOS fallback approach");
       }
 
-      console.log(`📄 Opening PDF with ${idsEncoded.split('%2C').length} orders (${sameOrigin ? 'same-origin' : 'cross-origin'} mode)`);
+      console.log(
+        `📄 Opening PDF with ${idsEncoded.split("%2C").length} orders (${sameOrigin ? "same-origin" : "cross-origin"} mode)`,
+      );
 
       // Open PDF using the appropriate method
       await openPdfInNewTab(idsEncoded, idToken, useSafariFallback);
-      
+
       // Success callback
       onSuccess?.();
-      
     } catch (e: any) {
       let errorMessage = "Failed to open PDF";
-      
+
       // Handle specific error types
       if (e?.message === "UNAUTHORIZED_401") {
         errorMessage = "Session expired - please log in again";
@@ -85,7 +86,7 @@ export default function ViewPdfButton({
       } else if (e?.message) {
         errorMessage = e.message;
       }
-      
+
       console.error("PDF viewing error:", e);
       setError(errorMessage);
       onError?.(errorMessage);
@@ -103,19 +104,15 @@ export default function ViewPdfButton({
       >
         {loading ? "Opening…" : children}
       </Button>
-      
-      {error && (
-        <div className="text-sm text-red-600 text-center">
-          {error}
-        </div>
-      )}
-      
+
+      {error && <div className="text-sm text-red-600 text-center">{error}</div>}
+
       {/* Debug info in development */}
-      {process.env.NODE_ENV === 'development' && (
+      {process.env.NODE_ENV === "development" && (
         <div className="text-xs text-gray-500 text-center">
-          Mode: {sameOrigin ? 'same-origin' : 'cross-origin'} | 
-          IDs: {idsEncoded ? idsEncoded.split('%2C').length : 0} | 
-          Safari: {needsSafariFallback() ? 'yes' : 'no'}
+          Mode: {sameOrigin ? "same-origin" : "cross-origin"} | IDs:{" "}
+          {idsEncoded ? idsEncoded.split("%2C").length : 0} | Safari:{" "}
+          {needsSafariFallback() ? "yes" : "no"}
         </div>
       )}
     </div>
@@ -130,7 +127,10 @@ export function SimplePdfButton({
   idToken,
   className = "w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700",
   disabled = false,
-}: Pick<ViewPdfButtonProps, 'idsEncoded' | 'idToken' | 'className' | 'disabled'>) {
+}: Pick<
+  ViewPdfButtonProps,
+  "idsEncoded" | "idToken" | "className" | "disabled"
+>) {
   return (
     <ViewPdfButton
       idsEncoded={idsEncoded}

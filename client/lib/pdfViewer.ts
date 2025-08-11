@@ -37,12 +37,15 @@ export async function openPdfInNewTabViaProxy(
   idToken: string,
 ): Promise<void> {
   // Fetch PDF through our server proxy
-  const response = await fetch(`/api/pdf?ids=${encodeURIComponent(idsEncoded)}`, {
-    headers: {
-      "X-Auth-Token": idToken,
-      "Accept": "application/pdf",
+  const response = await fetch(
+    `/api/pdf?ids=${encodeURIComponent(idsEncoded)}`,
+    {
+      headers: {
+        "X-Auth-Token": idToken,
+        Accept: "application/pdf",
+      },
     },
-  });
+  );
 
   // Handle authentication errors
   if (response.status === 401) {
@@ -56,13 +59,13 @@ export async function openPdfInNewTabViaProxy(
 
   // Get PDF as blob
   const blob = await response.blob();
-  
+
   // Create blob URL for viewing
   const blobUrl = URL.createObjectURL(blob);
-  
+
   // Open in new tab
   window.open(blobUrl, "_blank", "noopener");
-  
+
   // Clean up blob URL after 60 seconds
   setTimeout(() => {
     URL.revokeObjectURL(blobUrl);
@@ -81,7 +84,7 @@ export async function openPdfInNewTabSafariFallback(
 ): Promise<void> {
   // Open blank tab immediately (before any async operations)
   const newWindow = window.open("about:blank", "_blank", "noopener");
-  
+
   if (!newWindow) {
     throw new Error("Unable to open new tab - popup blocked");
   }
@@ -94,12 +97,15 @@ export async function openPdfInNewTabSafariFallback(
       newWindow.location.href = url;
     } else {
       // Cross-origin: fetch via proxy and load blob
-      const response = await fetch(`/api/pdf?ids=${encodeURIComponent(idsEncoded)}`, {
-        headers: {
-          "X-Auth-Token": idToken,
-          "Accept": "application/pdf",
+      const response = await fetch(
+        `/api/pdf?ids=${encodeURIComponent(idsEncoded)}`,
+        {
+          headers: {
+            "X-Auth-Token": idToken,
+            Accept: "application/pdf",
+          },
         },
-      });
+      );
 
       if (response.status === 401) {
         newWindow.close();
@@ -113,9 +119,9 @@ export async function openPdfInNewTabSafariFallback(
 
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
-      
+
       newWindow.location.href = blobUrl;
-      
+
       // Clean up after delay
       setTimeout(() => {
         URL.revokeObjectURL(blobUrl);
@@ -167,6 +173,9 @@ export async function openPdfInNewTab(
  */
 export function needsSafariFallback(): boolean {
   const userAgent = navigator.userAgent.toLowerCase();
-  return userAgent.includes('safari') && !userAgent.includes('chrome') ||
-         userAgent.includes('iphone') || userAgent.includes('ipad');
+  return (
+    (userAgent.includes("safari") && !userAgent.includes("chrome")) ||
+    userAgent.includes("iphone") ||
+    userAgent.includes("ipad")
+  );
 }

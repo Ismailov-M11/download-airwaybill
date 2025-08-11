@@ -314,7 +314,7 @@ export async function collectIdsPaged(
 
   // Step 6: Compute not found globally (not per batch)
   const allFoundSet = new Set(allFoundOrderNumbers);
-  const notFound = orderNumbers.filter(num => !allFoundSet.has(num));
+  const notFound = orderNumbers.filter((num) => !allFoundSet.has(num));
 
   if (DEBUG) {
     console.log(
@@ -324,7 +324,9 @@ export async function collectIdsPaged(
       `📋 Encoded IDs: ${idsEncoded.substring(0, 100)}${idsEncoded.length > 100 ? "..." : ""}`,
     );
     if (notFound.length > 0) {
-      console.log(`❌ Not found globally: ${notFound.slice(0, 5).join(', ')}${notFound.length > 5 ? ` ... and ${notFound.length - 5} more` : ''}`);
+      console.log(
+        `❌ Not found globally: ${notFound.slice(0, 5).join(", ")}${notFound.length > 5 ? ` ... and ${notFound.length - 5} more` : ""}`,
+      );
     }
   }
 

@@ -19,7 +19,7 @@ export const handlePdfPreview: RequestHandler = async (req, res) => {
   try {
     const ids = String(req.query.ids || "");
     // Support both query param and header for token
-    const token = String(req.query.token || req.headers['x-auth-token'] || "");
+    const token = String(req.query.token || req.headers["x-auth-token"] || "");
 
     // Validate required parameters
     if (!ids) {
@@ -30,9 +30,10 @@ export const handlePdfPreview: RequestHandler = async (req, res) => {
 
     if (!token) {
       clearTimeout(timeoutId);
-      res.status(400).json({ 
+      res.status(400).json({
         error: "Missing token parameter",
-        suggestion: "Provide token as query param (?token=...) or X-Auth-Token header"
+        suggestion:
+          "Provide token as query param (?token=...) or X-Auth-Token header",
       });
       return;
     }
@@ -181,7 +182,7 @@ export const handlePdfProxy: RequestHandler = async (req, res) => {
   try {
     const ids = String(req.query.ids || "");
     // Support both query param and header for token
-    const token = String(req.query.token || req.headers['x-auth-token'] || "");
+    const token = String(req.query.token || req.headers["x-auth-token"] || "");
 
     // Validate required parameters
     if (!ids) {
@@ -192,9 +193,10 @@ export const handlePdfProxy: RequestHandler = async (req, res) => {
 
     if (!token) {
       clearTimeout(timeoutId);
-      res.status(400).json({ 
+      res.status(400).json({
         error: "Missing token parameter",
-        suggestion: "Provide token as query param (?token=...) or X-Auth-Token header"
+        suggestion:
+          "Provide token as query param (?token=...) or X-Auth-Token header",
       });
       return;
     }

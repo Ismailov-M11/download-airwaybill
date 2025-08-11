@@ -11,14 +11,14 @@
 export function dedupePreserveOrder<T>(arr: T[]): T[] {
   const seen = new Set<T>();
   const result: T[] = [];
-  
+
   for (const item of arr) {
     if (!seen.has(item)) {
       seen.add(item);
       result.push(item);
     }
   }
-  
+
   return result;
 }
 
@@ -27,12 +27,15 @@ export function dedupePreserveOrder<T>(arr: T[]): T[] {
  * @param respJson - JSON response from API (can be { data: { list } } or { list })
  * @returns Object with ids array and encoded string for URL
  */
-export function extractIdsEncodedFromResponse(respJson: any): { ids: number[]; idsEncoded: string } {
+export function extractIdsEncodedFromResponse(respJson: any): {
+  ids: number[];
+  idsEncoded: string;
+} {
   // Handle empty or invalid response
-  if (!respJson || typeof respJson !== 'object') {
-    return { ids: [], idsEncoded: '' };
+  if (!respJson || typeof respJson !== "object") {
+    return { ids: [], idsEncoded: "" };
   }
-  
+
   // Extract list from response - handle both response formats
   let list: any[] = [];
   if (respJson.data && Array.isArray(respJson.data.list)) {
@@ -41,31 +44,31 @@ export function extractIdsEncodedFromResponse(respJson: any): { ids: number[]; i
     list = respJson.list;
   } else {
     // No valid list found
-    return { ids: [], idsEncoded: '' };
+    return { ids: [], idsEncoded: "" };
   }
-  
+
   // Extract IDs from list items
   const rawIds: any[] = list
-    .map(item => item?.id) // Get id field from each item
-    .filter(id => id !== undefined && id !== null); // Filter out missing IDs
-  
+    .map((item) => item?.id) // Get id field from each item
+    .filter((id) => id !== undefined && id !== null); // Filter out missing IDs
+
   // Convert to numbers and filter out non-numeric values
   const numericIds: number[] = rawIds
-    .map(id => {
-      const parsed = typeof id === 'string' ? parseInt(id, 10) : Number(id);
+    .map((id) => {
+      const parsed = typeof id === "string" ? parseInt(id, 10) : Number(id);
       return isNaN(parsed) ? null : parsed;
     })
     .filter((id): id is number => id !== null); // Type guard to filter nulls
-  
+
   // Remove duplicates while preserving order
   const uniqueIds = dedupePreserveOrder(numericIds);
-  
+
   // Create encoded string for URL (strictly no spaces, %2C for comma)
-  const idsEncoded = uniqueIds.map(String).join('%2C');
-  
+  const idsEncoded = uniqueIds.map(String).join("%2C");
+
   return {
     ids: uniqueIds,
-    idsEncoded
+    idsEncoded,
   };
 }
 

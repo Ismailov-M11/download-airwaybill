@@ -72,6 +72,7 @@ export default function ViewPdfButton({
       await openPdfInNewTab(idsEncoded, idToken, useSafariFallback, undefined);
 
       // Success callback
+      console.log("✅ PDF opened successfully");
       onSuccess?.();
     } catch (e: any) {
       let errorMessage = "Failed to open PDF";
@@ -81,14 +82,15 @@ export default function ViewPdfButton({
         errorMessage = "Session expired - please log in again";
       } else if (e?.message?.startsWith("PDF_FAILED_")) {
         const status = e.message.replace("PDF_FAILED_", "");
-        errorMessage = `PDF generation failed (${status}) - please try again`;
+        errorMessage = `PDF generation failed (${status}) - check DevTools Network tab for X-Dbg-* headers`;
       } else if (e?.message?.includes("popup blocked")) {
         errorMessage = "Popup blocked - please allow popups for this site";
       } else if (e?.message) {
         errorMessage = e.message;
       }
 
-      console.error("PDF viewing error:", e);
+      console.error("❌ PDF viewing error:", e);
+      console.log("💡 Debug tip: Check DevTools → Network → /api/pdf request → Response Headers for X-Dbg-* debug info");
       setError(errorMessage);
       onError?.(errorMessage);
     } finally {

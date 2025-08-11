@@ -53,9 +53,6 @@ const Dashboard: React.FC = () => {
     setIdsEncoded("");
   };
 
-  const setAuthCookie = (token: string): void => {
-    document.cookie = `w-jwt=${token}; path=/; secure; samesite=lax`;
-  };
 
   const downloadPdf = async (
     idsStr: string,

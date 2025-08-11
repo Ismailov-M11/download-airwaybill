@@ -61,14 +61,15 @@ const Dashboard: React.FC = () => {
     idsStr: string,
     filename: string,
   ): Promise<void> => {
-    const url = `https://admin.fargo.uz/file/order/airwaybill_mini?ids=${idsStr}`;
+    // Use server proxy to handle cross-domain cookies
+    const params = new URLSearchParams({
+      ids: idsStr,
+      token: idToken
+    });
+    const url = `/api/pdf?${params.toString()}`;
 
     const response = await fetch(url, {
       method: "GET",
-      headers: {
-        Accept: "application/pdf",
-      },
-      credentials: "include",
     });
 
     if (response.status === 401) {
@@ -76,9 +77,13 @@ const Dashboard: React.FC = () => {
     }
 
     if (!response.ok) {
-      throw new Error(
-        `Download error: ${response.status} ${response.statusText}`,
-      );
+      // Try to get error details from JSON response
+      try {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Download error: ${response.status} ${response.statusText}`);
+      } catch {
+        throw new Error(`Download error: ${response.status} ${response.statusText}`);
+      }
     }
 
     const blob = await response.blob();

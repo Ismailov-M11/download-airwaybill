@@ -1,6 +1,104 @@
 import { RequestHandler } from "express";
 
 /**
+ * PDF preview endpoint - serves PDF inline for viewing in browser
+ */
+export const handlePdfPreview: RequestHandler = async (req, res) => {
+  try {
+    const ids = String(req.query.ids || "");
+    const token = String(req.query.token || "");
+
+    // Validate required parameters
+    if (!ids) {
+      res.status(400).json({ error: "Missing ids parameter" });
+      return;
+    }
+
+    if (!token) {
+      res.status(400).json({ error: "Missing token parameter" });
+      return;
+    }
+
+    // Build upstream URL
+    const url = `https://admin.fargo.uz/file/order/airwaybill_mini?ids=${ids}`;
+
+    console.log(
+      `👁️ PDF Preview: serving ${ids.split("%2C").length} airwaybills inline`,
+    );
+
+    // Make request to upstream server with authorization cookie
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Cookie: `w-jwt=${token}`,
+        Accept: "application/pdf",
+        "User-Agent": "PDF-Preview/1.0",
+      },
+    });
+
+    // Handle upstream errors
+    if (!response.ok) {
+      console.error(
+        `PDF Preview error: ${response.status} ${response.statusText}`,
+      );
+
+      if (response.status === 401) {
+        res
+          .status(401)
+          .json({ error: "Authorization failed - token may be expired" });
+        return;
+      }
+
+      const errorText = await response.text().catch(() => "Unknown error");
+      res.status(response.status).json({
+        error: `Upstream server error: ${response.status} ${response.statusText}`,
+        details: errorText,
+      });
+      return;
+    }
+
+    // Set response headers for inline viewing
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "inline; filename=\"airwaybills.pdf\"");
+
+    // Copy content-length if available
+    const contentLength = response.headers.get("content-length");
+    if (contentLength) {
+      res.setHeader("Content-Length", contentLength);
+    }
+
+    // Stream the PDF response
+    if (response.body) {
+      const reader = response.body.getReader();
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          res.write(Buffer.from(value));
+        }
+      } finally {
+        reader.releaseLock();
+      }
+    }
+
+    res.end();
+    console.log(`✅ PDF Preview: successfully served PDF inline`);
+
+  } catch (error) {
+    console.error("PDF Preview error:", error);
+
+    if (!res.headersSent) {
+      res.status(500).json({
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  }
+};
+
+/**
  * PDF proxy endpoint to handle cross-domain cookie issues
  * Streams PDF from admin.fargo.uz with proper authorization cookie
  */

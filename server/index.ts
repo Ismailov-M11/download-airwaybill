@@ -2,7 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
-import { handlePdfProxy } from "./routes/pdf";
+import { handlePdfProxy, handlePdfPreview } from "./routes/pdf";
 
 export function createServer() {
   const app = express();
@@ -22,6 +22,9 @@ export function createServer() {
 
   // PDF proxy endpoint for cross-domain cookie handling
   app.get("/api/pdf", handlePdfProxy);
+
+  // PDF preview endpoint for viewing PDFs inline in browser
+  app.get("/api/pdf/preview", handlePdfPreview);
 
   return app;
 }

@@ -60,7 +60,7 @@ const Dashboard: React.FC = () => {
     }
 
     if (!response.ok) {
-      throw new Error(`Ошибка скачивания: ${response.status} ${response.statusText}`);
+      throw new Error(`Download error: ${response.status} ${response.statusText}`);
     }
 
     const blob = await response.blob();
@@ -78,12 +78,12 @@ const Dashboard: React.FC = () => {
   // Event handlers
   const handleSearchOrders = async () => {
     if (!idToken) {
-      setError('Токен авторизации не найден');
+      setError('Authorization token not found');
       return;
     }
 
     if (!orderNumbers.trim()) {
-      setError('Введите номера заказов');
+      setError('Enter order numbers');
       return;
     }
 
@@ -94,8 +94,8 @@ const Dashboard: React.FC = () => {
       const normalized = normalizeOrderNumbers(orderNumbers);
       setNormalizedOrderNumbers(normalized);
 
-      addLog(`В��едено номеров зака��ов: ${normalized.length}`);
-      addLog('Начинается поиск заказов...');
+      addLog(`Order numbers entered: ${normalized.length}`);
+      addLog('Starting order search...');
 
       const results = await searchAndExtractIdsOnce(orderNumbers, idToken);
 
@@ -103,29 +103,29 @@ const Dashboard: React.FC = () => {
       setNotFoundOrders(results.notFound);
       setIdsEncoded(results.idsEncoded);
 
-      addLog(`Поиск завершен: найдено ${results.ids.length} ID из ${normalized.length} номеров`);
-      addLog(`Закодированные ID: ${results.idsEncoded}`);
+      addLog(`Search completed: found ${results.ids.length} IDs from ${normalized.length} numbers`);
+      addLog(`Encoded IDs: ${results.idsEncoded}`);
 
       if (results.notFound.length > 0) {
-        addLog(`Не найдены номера (${results.notFound.length}): ${results.notFound.join(', ')}`);
+        addLog(`Numbers not found (${results.notFound.length}): ${results.notFound.join(', ')}`);
       }
       
     } catch (error) {
       if (error instanceof Error && error.message === 'UNAUTHORIZED_401') {
-        addLog('Сессия истекла, требуется повторная авторизация');
+        addLog('Session expired, re-authentication required');
         logout();
         return;
       }
 
       if (error instanceof Error && error.message === 'URI_TOO_LONG_414') {
-        addLog('Слишком много номеров в одном запросе, попробуйте разбить на меньшие части');
-        setError('Слишком длинный список номеров - разбейте на части');
+        addLog('Too many numbers in one request, try splitting into smaller parts');
+        setError('Number list too long - split into parts');
         return;
       }
 
-      const message = error instanceof Error ? error.message : 'Ошибка поиска заказов';
+      const message = error instanceof Error ? error.message : 'Order search error';
       setError(message);
-      addLog(`Ошибка: ${message}`);
+      addLog(`Error: ${message}`);
     } finally {
       setIsSearching(false);
     }
@@ -133,7 +133,7 @@ const Dashboard: React.FC = () => {
 
   const handleDownloadPdf = async () => {
     if (foundIds.length === 0 || !idsEncoded) {
-      setError('Сначала найдите заказы');
+      setError('Find orders first');
       return;
     }
 
@@ -141,29 +141,29 @@ const Dashboard: React.FC = () => {
     setError('');
 
     try {
-      addLog('Установка cookie для авторизации...');
+      addLog('Setting authorization cookie...');
       setAuthCookie(idToken);
 
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
       const filename = `airwaybill_${timestamp}.pdf`;
 
-      addLog(`Скачивание PDF с ${foundIds.length} заказами...`);
+      addLog(`Downloading PDF with ${foundIds.length} orders...`);
 
       await downloadPdf(idsEncoded, filename);
       
-      addLog(`PDF файл "${filename}" успешн�� скачан`);
+      addLog(`PDF file "${filename}" successfully downloaded`);
       
     } catch (error) {
       if (error instanceof Error && error.message === '401') {
-        addLog('Сессия истекла, требу��тся повто��ная авторизация');
-        const message = 'Сессия истекла, войдите снова';
+        addLog('Session expired, re-authentication required');
+        const message = 'Session expired, please log in again';
         setError(message);
-        addLog(`Ошибка: ${message}`);
+        addLog(`Error: ${message}`);
         logout();
       } else {
-        const message = error instanceof Error ? error.message : 'Ош��бка скачивания PDF';
+        const message = error instanceof Error ? error.message : 'PDF download error';
         setError(message);
-        addLog(`Ошибка: ${message}`);
+        addLog(`Error: ${message}`);
       }
     } finally {
       setIsDownloading(false);
@@ -192,7 +192,7 @@ const Dashboard: React.FC = () => {
                 </svg>
               </div>
               <h1 className="text-xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Скачивание PDF Авианакладных
+                PDF Airwaybill Download
               </h1>
             </div>
             <Button
@@ -200,7 +200,7 @@ const Dashboard: React.FC = () => {
               variant="outline"
               className="border-gray-300 hover:bg-gray-50"
             >
-              Выйти
+              Logout
             </Button>
           </div>
         </div>
@@ -212,10 +212,10 @@ const Dashboard: React.FC = () => {
         <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm mb-6">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Система Авианакладных
+              Airwaybill System
             </CardTitle>
             <CardDescription>
-              Поиск заказов через Shipox API с оптимизацией и кэшированием, скачивание PDF авианакладных с admin.fargo.uz
+              Search orders through Shipox API with optimization and caching, download PDF airwaybills from admin.fargo.uz
             </CardDescription>
           </CardHeader>
         </Card>
@@ -226,23 +226,23 @@ const Dashboard: React.FC = () => {
             {/* Order Search */}
             <Card className="shadow-lg border-0 bg-white/95 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-lg">Поиск заказов</CardTitle>
+                <CardTitle className="text-lg">Order Search</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="order-numbers">Номера заказов</Label>
+                  <Label htmlFor="order-numbers">Order Numbers</Label>
                   <Textarea
                     id="order-numbers"
                     value={orderNumbers}
                     onChange={(e) => setOrderNumbers(e.target.value)}
-                    placeholder="Введите номера з��казов (через запятые, пробелы или новые с��роки)..."
+                    placeholder="Enter order numbers (separated by commas, spaces, or new lines)..."
                     className="min-h-[120px] resize-none"
                     disabled={isSearching}
                   />
                 </div>
                 {normalizedOrderNumbers.length > 0 && (
                   <div className="text-sm text-gray-600">
-                    Распознано номеров: {normalizedOrderNumbers.length}
+                    Numbers recognized: {normalizedOrderNumbers.length}
                   </div>
                 )}
                 <div className="flex gap-2">
@@ -251,31 +251,7 @@ const Dashboard: React.FC = () => {
                     disabled={isSearching || !orderNumbers.trim()}
                     className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
                   >
-                    {isSearching ? 'Поиск заказов...' : 'Найти заказы'}
-                  </Button>
-                  <Button
-                    onClick={async () => {
-                      if (!idToken || !orderNumbers.trim()) return;
-
-                      setIsSearching(true);
-                      setError('');
-                      try {
-                        addLog('🧪 Тестовый запрос (один запрос без кэша)...');
-                        const result = await searchOnceAndExtract(orderNumbers, idToken);
-                        addLog(`��ест: найдено ${result.ids.length} ID, не найдено ${result.notFound.length}`);
-                        addLog(`Encoded: ${result.idsEncoded}`);
-                      } catch (error) {
-                        const msg = error instanceof Error ? error.message : 'Ошибка теста';
-                        addLog(`Ошибка теста: ${msg}`);
-                      } finally {
-                        setIsSearching(false);
-                      }
-                    }}
-                    disabled={isSearching || !orderNumbers.trim()}
-                    variant="outline"
-                    size="sm"
-                  >
-                    Тест
+                    {isSearching ? 'Searching orders...' : 'Find Orders'}
                   </Button>
                 </div>
               </CardContent>
@@ -284,17 +260,17 @@ const Dashboard: React.FC = () => {
             {/* Download */}
             <Card className="shadow-lg border-0 bg-white/95 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-lg">Скачивание авианакладных</CardTitle>
+                <CardTitle className="text-lg">Airwaybill Download</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {foundIds.length > 0 && (
                   <div className="text-sm text-green-600">
-                    Найдено ID для скачивания: {foundIds.length}
+                    IDs found for download: {foundIds.length}
                   </div>
                 )}
                 {notFoundOrders.length > 0 && (
                   <div className="text-sm text-red-600">
-                    Не найдено: {notFoundOrders.length} номеров
+                    Not found: {notFoundOrders.length} numbers
                   </div>
                 )}
                 <Button
@@ -302,7 +278,7 @@ const Dashboard: React.FC = () => {
                   disabled={isDownloading || foundIds.length === 0}
                   className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                 >
-                  {isDownloading ? 'Скачивание PDF...' : 'Скачать авианакладные'}
+                  {isDownloading ? 'Downloading PDF...' : 'Download Airwaybills'}
                 </Button>
               </CardContent>
             </Card>
@@ -314,12 +290,12 @@ const Dashboard: React.FC = () => {
             {isDownloading && (
               <Card className="shadow-lg border-0 bg-white/95 backdrop-blur-sm">
                 <CardHeader>
-                  <CardTitle className="text-lg">Прогресс</CardTitle>
+                  <CardTitle className="text-lg">Progress</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-center">
                     <div className="animate-spin w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-2"></div>
-                    <div className="text-sm">Скачива��ие авианакладных...</div>
+                    <div className="text-sm">Downloading airwaybills...</div>
                   </div>
                 </CardContent>
               </Card>
@@ -329,17 +305,17 @@ const Dashboard: React.FC = () => {
             {(normalizedOrderNumbers.length > 0 || foundIds.length > 0 || notFoundOrders.length > 0) && (
               <Card className="shadow-lg border-0 bg-white/95 backdrop-blur-sm">
                 <CardHeader>
-                  <CardTitle className="text-lg">Статус</CardTitle>
+                  <CardTitle className="text-lg">Status</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
                   {normalizedOrderNumbers.length > 0 && (
-                    <div>Вве��ено номеров заказов: <span className="font-semibold">{normalizedOrderNumbers.length}</span></div>
+                    <div>Order numbers entered: <span className="font-semibold">{normalizedOrderNumbers.length}</span></div>
                   )}
                   {foundIds.length > 0 && (
-                    <div className="text-green-600">Найдено ID: <span className="font-semibold">{foundIds.length}</span></div>
+                    <div className="text-green-600">IDs found: <span className="font-semibold">{foundIds.length}</span></div>
                   )}
                   {notFoundOrders.length > 0 && (
-                    <div className="text-red-600">Не найдено: <span className="font-semibold">{notFoundOrders.length}</span></div>
+                    <div className="text-red-600">Not found: <span className="font-semibold">{notFoundOrders.length}</span></div>
                   )}
                 </CardContent>
               </Card>
@@ -357,17 +333,17 @@ const Dashboard: React.FC = () => {
             {/* Logs */}
             <Card className="shadow-lg border-0 bg-white/95 backdrop-blur-sm">
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-lg">Логи</CardTitle>
+                <CardTitle className="text-lg">Logs</CardTitle>
                 <div className="flex gap-2">
                   <Button
                     onClick={() => {
                       clearOrderCache();
-                      addLog('Кэш заказов очищен');
+                      addLog('Order cache cleared');
                     }}
                     variant="outline"
                     size="sm"
                   >
-                    Очистить кэш
+                    Clear Cache
                   </Button>
                   <Button
                     onClick={clearLogs}
@@ -375,14 +351,14 @@ const Dashboard: React.FC = () => {
                     size="sm"
                     disabled={logs.length === 0}
                   >
-                    Очистить
+                    Clear
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="bg-gray-50 rounded-lg p-3 max-h-64 overflow-y-auto">
                   {logs.length === 0 ? (
-                    <div className="text-gray-500 text-sm text-center">Логи появятся здесь</div>
+                    <div className="text-gray-500 text-sm text-center">Logs will appear here</div>
                   ) : (
                     <div className="space-y-1">
                       {logs.map((log, index) => (

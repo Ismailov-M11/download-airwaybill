@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
+import { handlePdfProxy } from "./routes/pdf";
 
 export function createServer() {
   const app = express();
@@ -18,6 +19,9 @@ export function createServer() {
   });
 
   app.get("/api/demo", handleDemo);
+
+  // PDF proxy endpoint for cross-domain cookie handling
+  app.get("/api/pdf", handlePdfProxy);
 
   return app;
 }

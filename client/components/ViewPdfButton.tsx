@@ -90,7 +90,9 @@ export default function ViewPdfButton({
       }
 
       console.error("❌ PDF viewing error:", e);
-      console.log("💡 Debug tip: Check DevTools → Network → /api/pdf request → Response Headers for X-Dbg-* debug info");
+      console.log(
+        "💡 Debug tip: Check DevTools → Network → /api/pdf request → Response Headers for X-Dbg-* debug info",
+      );
       setError(errorMessage);
       onError?.(errorMessage);
     } finally {
@@ -113,8 +115,8 @@ export default function ViewPdfButton({
       {/* Debug info in development */}
       {process.env.NODE_ENV === "development" && (
         <div className="text-xs text-gray-500 text-center">
-          Mode: {sameOrigin ? "same-origin" : "cross-origin (hardened proxy)"} | IDs:{" "}
-          {idsEncoded ? idsEncoded.split("%2C").length : 0} | Safari:{" "}
+          Mode: {sameOrigin ? "same-origin" : "cross-origin (hardened proxy)"} |
+          IDs: {idsEncoded ? idsEncoded.split("%2C").length : 0} | Safari:{" "}
           {needsSafariFallback() ? "yes" : "no"}
           <br />
           💡 Check DevTools Network tab for X-Dbg-* debug headers

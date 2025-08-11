@@ -52,7 +52,10 @@ export async function openPdfInNewTabViaProxy(
   console.log("🔍 PDF Debug Info:");
   console.log("  X-Dbg-Url:", response.headers.get("X-Dbg-Url"));
   console.log("  X-Dbg-Ids:", response.headers.get("X-Dbg-Ids"));
-  console.log("  X-Dbg-Upstream-Status:", response.headers.get("X-Dbg-Upstream-Status"));
+  console.log(
+    "  X-Dbg-Upstream-Status:",
+    response.headers.get("X-Dbg-Upstream-Status"),
+  );
   console.log("  X-Dbg-Bytes:", response.headers.get("X-Dbg-Bytes"));
   console.log("  X-Dbg-Time:", response.headers.get("X-Dbg-Time"));
 
@@ -121,7 +124,10 @@ export async function openPdfInNewTabSafariFallback(
 
       // Log debug info for Safari fallback
       console.log("🍎 Safari Fallback Debug:");
-      console.log("  X-Dbg-Upstream-Status:", response.headers.get("X-Dbg-Upstream-Status"));
+      console.log(
+        "  X-Dbg-Upstream-Status:",
+        response.headers.get("X-Dbg-Upstream-Status"),
+      );
       console.log("  X-Dbg-Bytes:", response.headers.get("X-Dbg-Bytes"));
 
       if (response.status === 401) {

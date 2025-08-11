@@ -14,7 +14,7 @@ function mask(v = "", keep = 8): string {
  */
 function normalizeIdsParam(raw: string): string {
   if (!raw) return "";
-  
+
   try {
     const once = decodeURIComponent(raw); // "%252C" -> "%2C" or "1,2,3"
     if (/%2C/i.test(once)) return once; // already correct
@@ -22,7 +22,7 @@ function normalizeIdsParam(raw: string): string {
   } catch {
     /* ignore decode errors */
   }
-  
+
   // Fallbacks
   if (/%2C/i.test(raw)) return raw; // correct already
   return raw.replace(/,/g, "%2C"); // encode commas once
@@ -46,9 +46,9 @@ export const handlePdfProxy: RequestHandler = async (req, res) => {
   }
 
   if (!jwt) {
-    res.status(400).json({ 
+    res.status(400).json({
       error: "Missing authentication token",
-      suggestion: "Provide X-Auth-Token header with id_token"
+      suggestion: "Provide X-Auth-Token header with id_token",
     });
     return;
   }
@@ -57,14 +57,14 @@ export const handlePdfProxy: RequestHandler = async (req, res) => {
   const cookie = ["w-jwt=" + jwt, bh ? "w-bh=" + bh : null]
     .filter(Boolean)
     .join("; ");
-  
+
   const url = `https://admin.fargo.uz/file/order/airwaybill_mini?ids=${ids}`;
 
   const t0 = Date.now();
   console.log("[proxy→upstream]", {
     url,
     cookie: `w-jwt=${mask(jwt)}; w-bh=${mask(bh)}`,
-    referer: "https://admin.fargo.uz/dashboard/order/list"
+    referer: "https://admin.fargo.uz/dashboard/order/list",
   });
 
   try {
@@ -85,7 +85,7 @@ export const handlePdfProxy: RequestHandler = async (req, res) => {
     // Set debug headers (visible in DevTools)
     res.setHeader(
       "Access-Control-Expose-Headers",
-      "X-Dbg-Ids,X-Dbg-Url,X-Dbg-Upstream-Status,X-Dbg-Bytes,X-Dbg-Time"
+      "X-Dbg-Ids,X-Dbg-Url,X-Dbg-Upstream-Status,X-Dbg-Bytes,X-Dbg-Time",
     );
     res.setHeader("X-Dbg-Ids", ids);
     res.setHeader("X-Dbg-Url", url);
@@ -97,7 +97,7 @@ export const handlePdfProxy: RequestHandler = async (req, res) => {
     if (!buf.slice(0, 5).toString().startsWith("%PDF-")) {
       console.warn(
         "[proxy] upstream not starting with %PDF, first bytes:",
-        buf.slice(0, 16).toString("hex")
+        buf.slice(0, 16).toString("hex"),
       );
     }
 
@@ -105,27 +105,26 @@ export const handlePdfProxy: RequestHandler = async (req, res) => {
       console.error(
         "[proxy] upstream error",
         response.status,
-        buf.slice(0, 200).toString()
+        buf.slice(0, 200).toString(),
       );
       res.status(response.status).send(buf.toString());
       return;
     }
 
-    console.log("[proxy] ok", { 
-      status: response.status, 
-      bytes: buf.length, 
+    console.log("[proxy] ok", {
+      status: response.status,
+      bytes: buf.length,
       ms,
-      idsCount: ids.split("%2C").length
+      idsCount: ids.split("%2C").length,
     });
 
     res.setHeader("Content-Type", "application/pdf");
     res.end(buf);
-
   } catch (error) {
     console.error("[proxy] fetch error:", error);
     res.status(500).json({
       error: "Failed to fetch PDF from upstream",
-      details: error instanceof Error ? error.message : "Unknown error"
+      details: error instanceof Error ? error.message : "Unknown error",
     });
   }
 };
@@ -136,15 +135,15 @@ export const handlePdfProxy: RequestHandler = async (req, res) => {
  */
 export const handlePdfPreview: RequestHandler = async (req, res) => {
   console.log("[preview] redirecting to main proxy endpoint");
-  
+
   // Extract parameters
   const ids = String(req.query.ids || "");
   const token = String(req.query.token || req.headers["x-auth-token"] || "");
-  
+
   if (!ids || !token) {
-    res.status(400).json({ 
+    res.status(400).json({
       error: "Missing required parameters",
-      suggestion: "Use /api/pdf with X-Auth-Token header instead"
+      suggestion: "Use /api/pdf with X-Auth-Token header instead",
     });
     return;
   }

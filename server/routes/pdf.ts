@@ -8,7 +8,7 @@ import { RequestHandler } from "express";
  */
 function normalizeIdsParam(raw: string): string {
   if (!raw) return '';
-
+  
   try {
     // If we receive %252C (double-encoded), decode once -> %2C
     const once = decodeURIComponent(raw);
@@ -17,7 +17,7 @@ function normalizeIdsParam(raw: string): string {
   } catch (error) {
     // Ignore decode errors and continue with fallbacks
   }
-
+  
   // Fallbacks
   if (/%2C/i.test(raw)) return raw;              // correct already
   return raw.replace(/,/g, '%2C');               // encode commas once
@@ -25,7 +25,7 @@ function normalizeIdsParam(raw: string): string {
 
 /**
  * PDF preview endpoint - serves PDF inline for viewing in browser
- * Enhanced with timeout handling and X-Auth-Token header support
+ * Enhanced with timeout handling and ID normalization
  */
 export const handlePdfPreview: RequestHandler = async (req, res) => {
   // Set timeout to prevent 504 errors
@@ -40,7 +40,8 @@ export const handlePdfPreview: RequestHandler = async (req, res) => {
   }, 60000); // 60 second timeout
 
   try {
-    const ids = String(req.query.ids || "");
+    const rawIds = String(req.query.ids || "");
+    const ids = normalizeIdsParam(rawIds); // Ensure exactly one level of encoding
     // Support both query param and header for token
     const token = String(req.query.token || req.headers["x-auth-token"] || "");
 
@@ -64,7 +65,7 @@ export const handlePdfPreview: RequestHandler = async (req, res) => {
     // Count the number of IDs for logging
     const idCount = ids.split("%2C").length;
 
-    // Build upstream URL
+    // Build upstream URL - ids is already properly encoded, do NOT re-encode
     const url = `https://admin.fargo.uz/file/order/airwaybill_mini?ids=${ids}`;
 
     console.log(`👁️ PDF Preview: serving ${idCount} airwaybills inline`);
@@ -191,7 +192,7 @@ export const handlePdfPreview: RequestHandler = async (req, res) => {
 
 /**
  * PDF proxy endpoint to handle cross-domain cookie issues
- * Enhanced with timeout handling and X-Auth-Token header support
+ * Enhanced with timeout handling and ID normalization
  */
 export const handlePdfProxy: RequestHandler = async (req, res) => {
   // Set timeout to prevent 504 errors
@@ -206,7 +207,8 @@ export const handlePdfProxy: RequestHandler = async (req, res) => {
   }, 60000); // 60 second timeout
 
   try {
-    const ids = String(req.query.ids || "");
+    const rawIds = String(req.query.ids || "");
+    const ids = normalizeIdsParam(rawIds); // Ensure exactly one level of encoding
     // Support both query param and header for token
     const token = String(req.query.token || req.headers["x-auth-token"] || "");
 
@@ -227,7 +229,7 @@ export const handlePdfProxy: RequestHandler = async (req, res) => {
       return;
     }
 
-    // Build upstream URL
+    // Build upstream URL - ids is already properly encoded, do NOT re-encode
     const url = `https://admin.fargo.uz/file/order/airwaybill_mini?ids=${ids}`;
 
     console.log(

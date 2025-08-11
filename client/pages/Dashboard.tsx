@@ -19,6 +19,7 @@ import {
   getCacheStats,
   clearOrderCache,
 } from "@/lib/orderSearch";
+import ViewPdfButton from "@/components/ViewPdfButton";
 
 const Dashboard: React.FC = () => {
   const { logout } = useAuth();
@@ -52,56 +53,6 @@ const Dashboard: React.FC = () => {
     setIdsEncoded("");
   };
 
-  const previewPdf = (idsStr: string): void => {
-    try {
-      // Clear any existing errors
-      setError("");
-
-      if (!idsStr || !idToken) {
-        setError("Missing PDF data or authentication token");
-        addLog("❌ Cannot open PDF: missing data or token");
-        return;
-      }
-
-      // Open PDF in new window/tab for preview
-      const params = new URLSearchParams({
-        ids: idsStr,
-        token: idToken,
-      });
-      const url = `/api/pdf/preview?${params.toString()}`;
-
-      addLog(`Opening PDF with ${foundIds.length} orders...`);
-
-      // Open in new window
-      const newWindow = window.open(
-        url,
-        "_blank",
-        "width=1000,height=700,scrollbars=yes,resizable=yes",
-      );
-      if (newWindow) {
-        newWindow.focus();
-        addLog(`✅ PDF opened in new window`);
-
-        // Handle window load errors
-        newWindow.addEventListener("error", () => {
-          addLog("❌ Error loading PDF in new window");
-          setError(
-            "Failed to load PDF - try again or check if popup blocker is enabled",
-          );
-        });
-      } else {
-        addLog(`❌ Unable to open preview window - popup blocked`);
-        setError(
-          "Unable to open PDF window - please allow popups for this site",
-        );
-      }
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unknown error opening PDF";
-      addLog(`❌ Error: ${message}`);
-      setError(message);
-    }
-  };
 
   // Event handlers
   const handleSearchOrders = async () => {
@@ -281,13 +232,21 @@ const Dashboard: React.FC = () => {
                     Not found: {notFoundOrders.length} numbers
                   </div>
                 )}
-                <Button
-                  onClick={() => previewPdf(idsEncoded)}
+                <ViewPdfButton
+                  idsEncoded={idsEncoded}
+                  idToken={idToken}
                   disabled={foundIds.length === 0}
                   className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                  onError={(error) => {
+                    setError(error);
+                    addLog(`❌ PDF Error: ${error}`);
+                  }}
+                  onSuccess={() => {
+                    addLog(`✅ PDF opened successfully with ${foundIds.length} orders`);
+                  }}
                 >
                   Download
-                </Button>
+                </ViewPdfButton>
               </CardContent>
             </Card>
           </div>

@@ -1,6 +1,29 @@
 import { RequestHandler } from "express";
 
 /**
+ * Normalize "ids" parameter to exactly one level of encoding
+ * Handles cases where frontend might send %252C (double-encoded) by mistake
+ * @param raw - Raw ids parameter from query string
+ * @returns Properly encoded string with %2C separators
+ */
+function normalizeIdsParam(raw: string): string {
+  if (!raw) return '';
+
+  try {
+    // If we receive %252C (double-encoded), decode once -> %2C
+    const once = decodeURIComponent(raw);
+    if (/%2C/i.test(once)) return once;          // already correct (%2C)
+    if (/,/.test(once)) return once.replace(/,/g, '%2C'); // had commas -> encode once
+  } catch (error) {
+    // Ignore decode errors and continue with fallbacks
+  }
+
+  // Fallbacks
+  if (/%2C/i.test(raw)) return raw;              // correct already
+  return raw.replace(/,/g, '%2C');               // encode commas once
+}
+
+/**
  * PDF preview endpoint - serves PDF inline for viewing in browser
  * Enhanced with timeout handling and X-Auth-Token header support
  */
@@ -45,6 +68,9 @@ export const handlePdfPreview: RequestHandler = async (req, res) => {
     const url = `https://admin.fargo.uz/file/order/airwaybill_mini?ids=${ids}`;
 
     console.log(`👁️ PDF Preview: serving ${idCount} airwaybills inline`);
+    if (rawIds !== ids) {
+      console.log(`🔧 ID normalization: ${rawIds} -> ${ids}`);
+    }
 
     // Create abort controller for fetch timeout
     const abortController = new AbortController();
@@ -207,6 +233,9 @@ export const handlePdfProxy: RequestHandler = async (req, res) => {
     console.log(
       `📄 PDF Proxy: fetching ${ids.split("%2C").length} airwaybills`,
     );
+    if (rawIds !== ids) {
+      console.log(`🔧 ID normalization: ${rawIds} -> ${ids}`);
+    }
 
     // Create abort controller for fetch timeout
     const abortController = new AbortController();

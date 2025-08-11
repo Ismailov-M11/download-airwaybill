@@ -9,9 +9,9 @@ export const handlePdfPreview: RequestHandler = async (req, res) => {
   const timeoutId = setTimeout(() => {
     if (!res.headersSent) {
       console.error("PDF Preview: Request timeout after 60 seconds");
-      res.status(504).json({ 
+      res.status(504).json({
         error: "Request timeout - PDF generation took too long",
-        suggestion: "Try with fewer order numbers or try again later"
+        suggestion: "Try with fewer order numbers or try again later",
       });
     }
   }, 60000); // 60 second timeout
@@ -35,7 +35,7 @@ export const handlePdfPreview: RequestHandler = async (req, res) => {
 
     // Count the number of IDs for logging
     const idCount = ids.split("%2C").length;
-    
+
     // Build upstream URL
     const url = `https://admin.fargo.uz/file/order/airwaybill_mini?ids=${ids}`;
 
@@ -64,17 +64,17 @@ export const handlePdfPreview: RequestHandler = async (req, res) => {
         console.error(
           `PDF Preview error: ${response.status} ${response.statusText}`,
         );
-        
+
         clearTimeout(timeoutId);
-        
+
         if (response.status === 401) {
-          res.status(401).json({ 
+          res.status(401).json({
             error: "Authorization failed - token may be expired",
-            suggestion: "Please log in again"
+            suggestion: "Please log in again",
           });
           return;
         }
-        
+
         const errorText = await response.text().catch(() => "Unknown error");
         res.status(response.status).json({
           error: `Upstream server error: ${response.status} ${response.statusText}`,
@@ -85,8 +85,11 @@ export const handlePdfPreview: RequestHandler = async (req, res) => {
 
       // Set response headers for inline viewing
       res.setHeader("Content-Type", "application/pdf");
-      res.setHeader("Content-Disposition", 'inline; filename="airwaybills.pdf"');
-      
+      res.setHeader(
+        "Content-Disposition",
+        'inline; filename="airwaybills.pdf"',
+      );
+
       // Copy content-length if available
       const contentLength = response.headers.get("content-length");
       if (contentLength) {
@@ -97,15 +100,15 @@ export const handlePdfPreview: RequestHandler = async (req, res) => {
       if (response.body) {
         const reader = response.body.getReader();
         let bytesRead = 0;
-        
+
         try {
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
-            
+
             bytesRead += value.length;
             res.write(Buffer.from(value));
-            
+
             // Check if client disconnected
             if (res.destroyed) {
               console.log("PDF Preview: Client disconnected");
@@ -115,40 +118,41 @@ export const handlePdfPreview: RequestHandler = async (req, res) => {
         } finally {
           reader.releaseLock();
         }
-        
-        console.log(`✅ PDF Preview: successfully streamed ${bytesRead} bytes for ${idCount} airwaybills`);
+
+        console.log(
+          `✅ PDF Preview: successfully streamed ${bytesRead} bytes for ${idCount} airwaybills`,
+        );
       }
 
       res.end();
       clearTimeout(timeoutId);
-
     } catch (fetchError: any) {
       clearTimeout(fetchTimeoutId);
       clearTimeout(timeoutId);
-      
-      if (fetchError.name === 'AbortError') {
+
+      if (fetchError.name === "AbortError") {
         console.error("PDF Preview: Fetch timeout");
         if (!res.headersSent) {
           res.status(504).json({
             error: "PDF generation timeout",
-            suggestion: "The PDF service is taking too long. Try with fewer orders or try again later."
+            suggestion:
+              "The PDF service is taking too long. Try with fewer orders or try again later.",
           });
         }
         return;
       }
-      
+
       throw fetchError;
     }
-
   } catch (error) {
     clearTimeout(timeoutId);
     console.error("PDF Preview error:", error);
-    
+
     if (!res.headersSent) {
       res.status(500).json({
         error: "Internal server error",
         details: error instanceof Error ? error.message : "Unknown error",
-        suggestion: "Please try again or contact support if the issue persists"
+        suggestion: "Please try again or contact support if the issue persists",
       });
     }
   }
@@ -163,9 +167,9 @@ export const handlePdfProxy: RequestHandler = async (req, res) => {
   const timeoutId = setTimeout(() => {
     if (!res.headersSent) {
       console.error("PDF Proxy: Request timeout after 60 seconds");
-      res.status(504).json({ 
+      res.status(504).json({
         error: "Request timeout - PDF generation took too long",
-        suggestion: "Try with fewer order numbers or try again later"
+        suggestion: "Try with fewer order numbers or try again later",
       });
     }
   }, 60000); // 60 second timeout
@@ -221,9 +225,9 @@ export const handlePdfProxy: RequestHandler = async (req, res) => {
         clearTimeout(timeoutId);
 
         if (response.status === 401) {
-          res.status(401).json({ 
+          res.status(401).json({
             error: "Authorization failed - token may be expired",
-            suggestion: "Please log in again"
+            suggestion: "Please log in again",
           });
           return;
         }
@@ -270,7 +274,7 @@ export const handlePdfProxy: RequestHandler = async (req, res) => {
 
             bytesRead += value.length;
             res.write(Buffer.from(value));
-            
+
             // Check if client disconnected
             if (res.destroyed) {
               console.log("PDF Proxy: Client disconnected");
@@ -280,31 +284,30 @@ export const handlePdfProxy: RequestHandler = async (req, res) => {
         } finally {
           reader.releaseLock();
         }
-        
+
         console.log(`✅ PDF Proxy: successfully streamed ${bytesRead} bytes`);
       }
 
       res.end();
       clearTimeout(timeoutId);
-
     } catch (fetchError: any) {
       clearTimeout(fetchTimeoutId);
       clearTimeout(timeoutId);
-      
-      if (fetchError.name === 'AbortError') {
+
+      if (fetchError.name === "AbortError") {
         console.error("PDF Proxy: Fetch timeout");
         if (!res.headersSent) {
           res.status(504).json({
             error: "PDF generation timeout",
-            suggestion: "The PDF service is taking too long. Try with fewer orders or try again later."
+            suggestion:
+              "The PDF service is taking too long. Try with fewer orders or try again later.",
           });
         }
         return;
       }
-      
+
       throw fetchError;
     }
-
   } catch (error) {
     clearTimeout(timeoutId);
     console.error("PDF Proxy error:", error);
@@ -313,7 +316,7 @@ export const handlePdfProxy: RequestHandler = async (req, res) => {
       res.status(500).json({
         error: "Internal server error",
         details: error instanceof Error ? error.message : "Unknown error",
-        suggestion: "Please try again or contact support if the issue persists"
+        suggestion: "Please try again or contact support if the issue persists",
       });
     }
   }

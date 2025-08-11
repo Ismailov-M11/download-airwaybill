@@ -55,11 +55,11 @@ const Dashboard: React.FC = () => {
   const previewPdf = (idsStr: string): void => {
     try {
       // Clear any existing errors
-      setError('');
+      setError("");
 
       if (!idsStr || !idToken) {
-        setError('Missing PDF data or authentication token');
-        addLog('❌ Cannot open PDF: missing data or token');
+        setError("Missing PDF data or authentication token");
+        addLog("❌ Cannot open PDF: missing data or token");
         return;
       }
 
@@ -73,27 +73,35 @@ const Dashboard: React.FC = () => {
       addLog(`Opening PDF with ${foundIds.length} orders...`);
 
       // Open in new window
-      const newWindow = window.open(url, "_blank", "width=1000,height=700,scrollbars=yes,resizable=yes");
+      const newWindow = window.open(
+        url,
+        "_blank",
+        "width=1000,height=700,scrollbars=yes,resizable=yes",
+      );
       if (newWindow) {
         newWindow.focus();
         addLog(`✅ PDF opened in new window`);
 
         // Handle window load errors
-        newWindow.addEventListener('error', () => {
-          addLog('❌ Error loading PDF in new window');
-          setError('Failed to load PDF - try again or check if popup blocker is enabled');
+        newWindow.addEventListener("error", () => {
+          addLog("❌ Error loading PDF in new window");
+          setError(
+            "Failed to load PDF - try again or check if popup blocker is enabled",
+          );
         });
       } else {
         addLog(`❌ Unable to open preview window - popup blocked`);
-        setError('Unable to open PDF window - please allow popups for this site');
+        setError(
+          "Unable to open PDF window - please allow popups for this site",
+        );
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error opening PDF';
+      const message =
+        error instanceof Error ? error.message : "Unknown error opening PDF";
       addLog(`❌ Error: ${message}`);
       setError(message);
     }
   };
-
 
   // Event handlers
   const handleSearchOrders = async () => {
@@ -159,7 +167,6 @@ const Dashboard: React.FC = () => {
       setIsSearching(false);
     }
   };
-
 
   // Load token from localStorage on component mount
   React.useEffect(() => {
@@ -287,7 +294,6 @@ const Dashboard: React.FC = () => {
 
           {/* Right Column - Status & Logs */}
           <div className="space-y-6">
-
             {/* Status Summary */}
             {(normalizedOrderNumbers.length > 0 ||
               foundIds.length > 0 ||

@@ -62,7 +62,7 @@ const Dashboard: React.FC = () => {
     const url = `/api/pdf/preview?${params.toString()}`;
 
     // Open in new window
-    const newWindow = window.open(url, '_blank', 'width=1000,height=700');
+    const newWindow = window.open(url, "_blank", "width=1000,height=700");
     if (newWindow) {
       newWindow.focus();
       addLog(`PDF preview opened in new window`);
@@ -350,9 +350,7 @@ const Dashboard: React.FC = () => {
                     disabled={isDownloading || foundIds.length === 0}
                     className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                   >
-                    {isDownloading
-                      ? "Downloading..."
-                      : "📥 Download"}
+                    {isDownloading ? "Downloading..." : "📥 Download"}
                   </Button>
                 </div>
               </CardContent>

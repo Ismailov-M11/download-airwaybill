@@ -59,7 +59,7 @@ export const handlePdfPreview: RequestHandler = async (req, res) => {
 
     // Set response headers for inline viewing
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", "inline; filename=\"airwaybills.pdf\"");
+    res.setHeader("Content-Disposition", 'inline; filename="airwaybills.pdf"');
 
     // Copy content-length if available
     const contentLength = response.headers.get("content-length");
@@ -85,7 +85,6 @@ export const handlePdfPreview: RequestHandler = async (req, res) => {
 
     res.end();
     console.log(`✅ PDF Preview: successfully served PDF inline`);
-
   } catch (error) {
     console.error("PDF Preview error:", error);
 

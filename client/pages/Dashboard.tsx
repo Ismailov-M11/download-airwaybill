@@ -336,15 +336,25 @@ const Dashboard: React.FC = () => {
                     Not found: {notFoundOrders.length} numbers
                   </div>
                 )}
-                <Button
-                  onClick={handleDownloadPdf}
-                  disabled={isDownloading || foundIds.length === 0}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                >
-                  {isDownloading
-                    ? "Downloading PDF..."
-                    : "Download Airwaybills"}
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => previewPdf(idsEncoded)}
+                    disabled={foundIds.length === 0}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    👁️ Preview PDF
+                  </Button>
+                  <Button
+                    onClick={handleDownloadPdf}
+                    disabled={isDownloading || foundIds.length === 0}
+                    className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                  >
+                    {isDownloading
+                      ? "Downloading..."
+                      : "📥 Download"}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>

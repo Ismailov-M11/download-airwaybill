@@ -27,7 +27,6 @@ const Dashboard: React.FC = () => {
   const [orderNumbers, setOrderNumbers] = useState("");
   const [idToken, setIdToken] = useState<string>("");
   const [isSearching, setIsSearching] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
   const [normalizedOrderNumbers, setNormalizedOrderNumbers] = useState<
     string[]
   >([]);
@@ -137,46 +136,6 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleDownloadPdf = async () => {
-    if (foundIds.length === 0 || !idsEncoded) {
-      setError("Find orders first");
-      return;
-    }
-
-    setIsDownloading(true);
-    setError("");
-
-    try {
-      const timestamp = new Date()
-        .toISOString()
-        .replace(/[:.]/g, "-")
-        .slice(0, 19);
-      const filename = `airwaybill_${timestamp}.pdf`;
-
-      addLog(
-        `Downloading PDF with ${foundIds.length} orders via server proxy...`,
-      );
-
-      await downloadPdf(idsEncoded, filename);
-
-      addLog(`PDF file "${filename}" successfully downloaded`);
-    } catch (error) {
-      if (error instanceof Error && error.message === "401") {
-        addLog("Session expired, re-authentication required");
-        const message = "Session expired, please log in again";
-        setError(message);
-        addLog(`Error: ${message}`);
-        logout();
-      } else {
-        const message =
-          error instanceof Error ? error.message : "PDF download error";
-        setError(message);
-        addLog(`Error: ${message}`);
-      }
-    } finally {
-      setIsDownloading(false);
-    }
-  };
 
   // Load token from localStorage on component mount
   React.useEffect(() => {
@@ -304,20 +263,6 @@ const Dashboard: React.FC = () => {
 
           {/* Right Column - Status & Logs */}
           <div className="space-y-6">
-            {/* Progress */}
-            {isDownloading && (
-              <Card className="shadow-lg border-0 bg-white/95 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="text-lg">Progress</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center">
-                    <div className="animate-spin w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-2"></div>
-                    <div className="text-sm">Downloading airwaybills...</div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
 
             {/* Status Summary */}
             {(normalizedOrderNumbers.length > 0 ||

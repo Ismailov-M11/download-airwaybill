@@ -37,15 +37,13 @@ export async function openPdfInNewTabViaProxy(
   idToken: string,
 ): Promise<void> {
   // Fetch PDF through our server proxy
-  const response = await fetch(
-    `/api/pdf?ids=${encodeURIComponent(idsEncoded)}`,
-    {
-      headers: {
-        "X-Auth-Token": idToken,
-        Accept: "application/pdf",
-      },
+  // Note: idsEncoded is already properly encoded (id1%2Cid2%2C...), do NOT encode again
+  const response = await fetch(`/api/pdf?ids=${idsEncoded}`, {
+    headers: {
+      "X-Auth-Token": idToken,
+      Accept: "application/pdf",
     },
-  );
+  });
 
   // Handle authentication errors
   if (response.status === 401) {
@@ -97,15 +95,13 @@ export async function openPdfInNewTabSafariFallback(
       newWindow.location.href = url;
     } else {
       // Cross-origin: fetch via proxy and load blob
-      const response = await fetch(
-        `/api/pdf?ids=${encodeURIComponent(idsEncoded)}`,
-        {
-          headers: {
-            "X-Auth-Token": idToken,
-            Accept: "application/pdf",
-          },
+      // Note: idsEncoded is already properly encoded, do NOT encode again
+      const response = await fetch(`/api/pdf?ids=${idsEncoded}`, {
+        headers: {
+          "X-Auth-Token": idToken,
+          Accept: "application/pdf",
         },
-      );
+      });
 
       if (response.status === 401) {
         newWindow.close();

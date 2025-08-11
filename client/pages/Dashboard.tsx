@@ -1,72 +1,90 @@
-import React, { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
-import { searchAndExtractIdsOnce, normalizeOrderNumbers, getCacheStats, clearOrderCache } from '@/lib/orderSearch';
+import React, { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
+import {
+  searchAndExtractIdsOnce,
+  normalizeOrderNumbers,
+  getCacheStats,
+  clearOrderCache,
+} from "@/lib/orderSearch";
 
 const Dashboard: React.FC = () => {
   const { logout } = useAuth();
 
   // Application state
-  const [orderNumbers, setOrderNumbers] = useState('');
-  const [idToken, setIdToken] = useState<string>('');
+  const [orderNumbers, setOrderNumbers] = useState("");
+  const [idToken, setIdToken] = useState<string>("");
   const [isSearching, setIsSearching] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [normalizedOrderNumbers, setNormalizedOrderNumbers] = useState<string[]>([]);
+  const [normalizedOrderNumbers, setNormalizedOrderNumbers] = useState<
+    string[]
+  >([]);
   const [foundIds, setFoundIds] = useState<number[]>([]);
   const [notFoundOrders, setNotFoundOrders] = useState<string[]>([]);
-  const [idsEncoded, setIdsEncoded] = useState<string>('');
+  const [idsEncoded, setIdsEncoded] = useState<string>("");
   const [logs, setLogs] = useState<string[]>([]);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   // Airwaybill functions
   const addLog = (message: string) => {
-    setLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
+    setLogs((prev) => [
+      ...prev,
+      `${new Date().toLocaleTimeString()}: ${message}`,
+    ]);
   };
 
   const clearLogs = () => {
     setLogs([]);
-    setError('');
+    setError("");
     setFoundIds([]);
     setNotFoundOrders([]);
-    setIdsEncoded('');
+    setIdsEncoded("");
   };
-
-
-
 
   const setAuthCookie = (token: string): void => {
     document.cookie = `w-jwt=${token}; path=/; secure; samesite=lax`;
   };
 
-  const downloadPdf = async (idsStr: string, filename: string): Promise<void> => {
+  const downloadPdf = async (
+    idsStr: string,
+    filename: string,
+  ): Promise<void> => {
     const url = `https://admin.fargo.uz/file/order/airwaybill_mini?ids=${idsStr}`;
-    
+
     const response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Accept': 'application/pdf',
+        Accept: "application/pdf",
       },
-      credentials: 'include',
+      credentials: "include",
     });
 
     if (response.status === 401) {
-      throw new Error('401');
+      throw new Error("401");
     }
 
     if (!response.ok) {
-      throw new Error(`Download error: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Download error: ${response.status} ${response.statusText}`,
+      );
     }
 
     const blob = await response.blob();
-    
+
     const downloadUrl = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = downloadUrl;
     link.download = filename;
     document.body.appendChild(link);
@@ -78,24 +96,24 @@ const Dashboard: React.FC = () => {
   // Event handlers
   const handleSearchOrders = async () => {
     if (!idToken) {
-      setError('Authorization token not found');
+      setError("Authorization token not found");
       return;
     }
 
     if (!orderNumbers.trim()) {
-      setError('Enter order numbers');
+      setError("Enter order numbers");
       return;
     }
 
     setIsSearching(true);
-    setError('');
-    
+    setError("");
+
     try {
       const normalized = normalizeOrderNumbers(orderNumbers);
       setNormalizedOrderNumbers(normalized);
 
       addLog(`Order numbers entered: ${normalized.length}`);
-      addLog('Starting order search...');
+      addLog("Starting order search...");
 
       const results = await searchAndExtractIdsOnce(orderNumbers, idToken);
 
@@ -103,27 +121,33 @@ const Dashboard: React.FC = () => {
       setNotFoundOrders(results.notFound);
       setIdsEncoded(results.idsEncoded);
 
-      addLog(`Search completed: found ${results.ids.length} IDs from ${normalized.length} numbers`);
+      addLog(
+        `Search completed: found ${results.ids.length} IDs from ${normalized.length} numbers`,
+      );
       addLog(`Encoded IDs: ${results.idsEncoded}`);
 
       if (results.notFound.length > 0) {
-        addLog(`Numbers not found (${results.notFound.length}): ${results.notFound.join(', ')}`);
+        addLog(
+          `Numbers not found (${results.notFound.length}): ${results.notFound.join(", ")}`,
+        );
       }
-      
     } catch (error) {
-      if (error instanceof Error && error.message === 'UNAUTHORIZED_401') {
-        addLog('Session expired, re-authentication required');
+      if (error instanceof Error && error.message === "UNAUTHORIZED_401") {
+        addLog("Session expired, re-authentication required");
         logout();
         return;
       }
 
-      if (error instanceof Error && error.message === 'URI_TOO_LONG_414') {
-        addLog('Too many numbers in one request, try splitting into smaller parts');
-        setError('Number list too long - split into parts');
+      if (error instanceof Error && error.message === "URI_TOO_LONG_414") {
+        addLog(
+          "Too many numbers in one request, try splitting into smaller parts",
+        );
+        setError("Number list too long - split into parts");
         return;
       }
 
-      const message = error instanceof Error ? error.message : 'Order search error';
+      const message =
+        error instanceof Error ? error.message : "Order search error";
       setError(message);
       addLog(`Error: ${message}`);
     } finally {
@@ -133,35 +157,38 @@ const Dashboard: React.FC = () => {
 
   const handleDownloadPdf = async () => {
     if (foundIds.length === 0 || !idsEncoded) {
-      setError('Find orders first');
+      setError("Find orders first");
       return;
     }
 
     setIsDownloading(true);
-    setError('');
+    setError("");
 
     try {
-      addLog('Setting authorization cookie...');
+      addLog("Setting authorization cookie...");
       setAuthCookie(idToken);
 
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      const timestamp = new Date()
+        .toISOString()
+        .replace(/[:.]/g, "-")
+        .slice(0, 19);
       const filename = `airwaybill_${timestamp}.pdf`;
 
       addLog(`Downloading PDF with ${foundIds.length} orders...`);
 
       await downloadPdf(idsEncoded, filename);
-      
+
       addLog(`PDF file "${filename}" successfully downloaded`);
-      
     } catch (error) {
-      if (error instanceof Error && error.message === '401') {
-        addLog('Session expired, re-authentication required');
-        const message = 'Session expired, please log in again';
+      if (error instanceof Error && error.message === "401") {
+        addLog("Session expired, re-authentication required");
+        const message = "Session expired, please log in again";
         setError(message);
         addLog(`Error: ${message}`);
         logout();
       } else {
-        const message = error instanceof Error ? error.message : 'PDF download error';
+        const message =
+          error instanceof Error ? error.message : "PDF download error";
         setError(message);
         addLog(`Error: ${message}`);
       }
@@ -172,12 +199,11 @@ const Dashboard: React.FC = () => {
 
   // Load token from localStorage on component mount
   React.useEffect(() => {
-    const savedToken = localStorage.getItem('shipox_token');
+    const savedToken = localStorage.getItem("shipox_token");
     if (savedToken) {
       setIdToken(savedToken);
     }
   }, []);
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -187,8 +213,18 @@ const Dashboard: React.FC = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <svg
+                  className="w-5 h-5 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
                 </svg>
               </div>
               <h1 className="text-xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -215,7 +251,8 @@ const Dashboard: React.FC = () => {
               Airwaybill System
             </CardTitle>
             <CardDescription>
-              Search orders through Shipox API with optimization and caching, download PDF airwaybills from admin.fargo.uz
+              Search orders through Shipox API with optimization and caching,
+              download PDF airwaybills from admin.fargo.uz
             </CardDescription>
           </CardHeader>
         </Card>
@@ -251,7 +288,7 @@ const Dashboard: React.FC = () => {
                     disabled={isSearching || !orderNumbers.trim()}
                     className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
                   >
-                    {isSearching ? 'Searching orders...' : 'Find Orders'}
+                    {isSearching ? "Searching orders..." : "Find Orders"}
                   </Button>
                 </div>
               </CardContent>
@@ -278,7 +315,9 @@ const Dashboard: React.FC = () => {
                   disabled={isDownloading || foundIds.length === 0}
                   className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                 >
-                  {isDownloading ? 'Downloading PDF...' : 'Download Airwaybills'}
+                  {isDownloading
+                    ? "Downloading PDF..."
+                    : "Download Airwaybills"}
                 </Button>
               </CardContent>
             </Card>
@@ -302,20 +341,35 @@ const Dashboard: React.FC = () => {
             )}
 
             {/* Status Summary */}
-            {(normalizedOrderNumbers.length > 0 || foundIds.length > 0 || notFoundOrders.length > 0) && (
+            {(normalizedOrderNumbers.length > 0 ||
+              foundIds.length > 0 ||
+              notFoundOrders.length > 0) && (
               <Card className="shadow-lg border-0 bg-white/95 backdrop-blur-sm">
                 <CardHeader>
                   <CardTitle className="text-lg">Status</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
                   {normalizedOrderNumbers.length > 0 && (
-                    <div>Order numbers entered: <span className="font-semibold">{normalizedOrderNumbers.length}</span></div>
+                    <div>
+                      Order numbers entered:{" "}
+                      <span className="font-semibold">
+                        {normalizedOrderNumbers.length}
+                      </span>
+                    </div>
                   )}
                   {foundIds.length > 0 && (
-                    <div className="text-green-600">IDs found: <span className="font-semibold">{foundIds.length}</span></div>
+                    <div className="text-green-600">
+                      IDs found:{" "}
+                      <span className="font-semibold">{foundIds.length}</span>
+                    </div>
                   )}
                   {notFoundOrders.length > 0 && (
-                    <div className="text-red-600">Not found: <span className="font-semibold">{notFoundOrders.length}</span></div>
+                    <div className="text-red-600">
+                      Not found:{" "}
+                      <span className="font-semibold">
+                        {notFoundOrders.length}
+                      </span>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -338,7 +392,7 @@ const Dashboard: React.FC = () => {
                   <Button
                     onClick={() => {
                       clearOrderCache();
-                      addLog('Order cache cleared');
+                      addLog("Order cache cleared");
                     }}
                     variant="outline"
                     size="sm"
@@ -358,11 +412,16 @@ const Dashboard: React.FC = () => {
               <CardContent>
                 <div className="bg-gray-50 rounded-lg p-3 max-h-64 overflow-y-auto">
                   {logs.length === 0 ? (
-                    <div className="text-gray-500 text-sm text-center">Logs will appear here</div>
+                    <div className="text-gray-500 text-sm text-center">
+                      Logs will appear here
+                    </div>
                   ) : (
                     <div className="space-y-1">
                       {logs.map((log, index) => (
-                        <div key={index} className="text-xs font-mono text-gray-700">
+                        <div
+                          key={index}
+                          className="text-xs font-mono text-gray-700"
+                        >
                           {log}
                         </div>
                       ))}

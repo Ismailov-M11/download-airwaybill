@@ -71,51 +71,6 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const downloadPdf = async (
-    idsStr: string,
-    filename: string,
-  ): Promise<void> => {
-    // Use server proxy to handle cross-domain cookies
-    const params = new URLSearchParams({
-      ids: idsStr,
-      token: idToken,
-    });
-    const url = `/api/pdf?${params.toString()}`;
-
-    const response = await fetch(url, {
-      method: "GET",
-    });
-
-    if (response.status === 401) {
-      throw new Error("401");
-    }
-
-    if (!response.ok) {
-      // Try to get error details from JSON response
-      try {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.error ||
-            `Download error: ${response.status} ${response.statusText}`,
-        );
-      } catch {
-        throw new Error(
-          `Download error: ${response.status} ${response.statusText}`,
-        );
-      }
-    }
-
-    const blob = await response.blob();
-
-    const downloadUrl = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = downloadUrl;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(downloadUrl);
-  };
 
   // Event handlers
   const handleSearchOrders = async () => {

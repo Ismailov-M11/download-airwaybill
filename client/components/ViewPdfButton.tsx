@@ -9,6 +9,7 @@ import {
 export type ViewPdfButtonProps = {
   idsEncoded: string;
   idToken: string;
+  wBh?: string; // w-bh cookie value for Fargo API
   sameOrigin?: boolean; // Override global SAME_ORIGIN setting if needed
   className?: string;
   disabled?: boolean;
@@ -24,6 +25,7 @@ export type ViewPdfButtonProps = {
 export default function ViewPdfButton({
   idsEncoded,
   idToken,
+  wBh,
   sameOrigin = SAME_ORIGIN,
   className,
   disabled = false,
@@ -68,8 +70,8 @@ export default function ViewPdfButton({
       );
 
       // Open PDF using the hardened proxy with debug headers
-      // Note: wBh parameter can be undefined - server will use env variable if available
-      await openPdfInNewTab(idsEncoded, idToken, useSafariFallback, undefined);
+      // Pass wBh token for proper Fargo API authentication
+      await openPdfInNewTab(idsEncoded, idToken, useSafariFallback, wBh);
 
       // Success callback
       console.log("✅ PDF opened successfully");
@@ -132,16 +134,18 @@ export default function ViewPdfButton({
 export function SimplePdfButton({
   idsEncoded,
   idToken,
+  wBh,
   className = "w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700",
   disabled = false,
 }: Pick<
   ViewPdfButtonProps,
-  "idsEncoded" | "idToken" | "className" | "disabled"
+  "idsEncoded" | "idToken" | "wBh" | "className" | "disabled"
 >) {
   return (
     <ViewPdfButton
       idsEncoded={idsEncoded}
       idToken={idToken}
+      wBh={wBh}
       className={className}
       disabled={disabled}
     />

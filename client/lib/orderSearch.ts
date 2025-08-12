@@ -353,14 +353,16 @@ export async function collectIdsPaged(
       const firstItem = allAPIResponses[0];
       console.log(`  Sample API item:`, {
         id: firstItem.id,
-        order_number: firstItem.order_number
+        order_number: firstItem.order_number,
       });
     }
 
     if (notFound.length > 0) {
       console.log(`❌ Search failed: no results returned from API`);
     } else {
-      console.log(`✅ Search successful: ${uniqueIds.length} IDs extracted from API response`);
+      console.log(
+        `✅ Search successful: ${uniqueIds.length} IDs extracted from API response`,
+      );
     }
   }
 

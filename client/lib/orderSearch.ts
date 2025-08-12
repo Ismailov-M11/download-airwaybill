@@ -159,7 +159,7 @@ async function searchBatchWithPagination(
           console.log(`🔍 First API item structure:`, {
             id: firstItem.id,
             order_number: firstItem.order_number,
-            availableFields: Object.keys(firstItem).slice(0, 10) // Show first 10 fields
+            availableFields: Object.keys(firstItem).slice(0, 10), // Show first 10 fields
           });
         }
       }
@@ -303,7 +303,7 @@ export async function collectIdsPaged(
       return {
         ids,
         items,
-        requestedBatch: batch
+        requestedBatch: batch,
       };
     });
 
@@ -326,8 +326,10 @@ export async function collectIdsPaged(
   // Step 6: Compute not found by checking which requested order numbers have matching items in API response
   const foundOrderNumbers = new Set(
     allAPIResponses
-      .filter((item) => item.order_number !== undefined && item.order_number !== null)
-      .map((item) => String(item.order_number))
+      .filter(
+        (item) => item.order_number !== undefined && item.order_number !== null,
+      )
+      .map((item) => String(item.order_number)),
   );
 
   const notFound = orderNumbers.filter((num) => !foundOrderNumbers.has(num));
@@ -344,7 +346,9 @@ export async function collectIdsPaged(
     console.log(`🔍 Debug info:`);
     console.log(`  Requested order numbers: ${orderNumbers.length}`);
     console.log(`  API returned items: ${allAPIResponses.length}`);
-    console.log(`  Items with order_number field: ${allAPIResponses.filter(item => item.order_number !== undefined).length}`);
+    console.log(
+      `  Items with order_number field: ${allAPIResponses.filter((item) => item.order_number !== undefined).length}`,
+    );
     console.log(`  Unique found order numbers: ${foundOrderNumbers.size}`);
 
     if (foundOrderNumbers.size > 0) {

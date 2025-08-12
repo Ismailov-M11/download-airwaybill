@@ -61,11 +61,26 @@ export const handlePdfProxy: RequestHandler = async (req, res) => {
   const url = `https://admin.fargo.uz/file/order/airwaybill_mini?ids=${ids}`;
 
   const t0 = Date.now();
-  console.log("[proxy→upstream]", {
-    url,
-    cookie: `w-jwt=${mask(jwt)}; w-bh=${mask(bh)}`,
-    referer: "https://admin.fargo.uz/dashboard/order/list",
-  });
+
+  // Detailed logging of the upstream request
+  console.log("=".repeat(80));
+  console.log("📤 UPSTREAM REQUEST TO ADMIN.FARGO.UZ");
+  console.log("=".repeat(80));
+  console.log("🌐 URL:", url);
+  console.log("🔧 Method: GET");
+  console.log("📋 Headers:");
+  console.log("  Cookie:", `w-jwt=${mask(jwt)}; w-bh=${mask(bh)}`);
+  console.log("  Accept: application/pdf");
+  console.log("  Referer: https://admin.fargo.uz/dashboard/order/list");
+  console.log("  User-Agent: Mozilla/5.0 (compatible; PDF-Proxy/1.0)");
+  console.log("📊 Request Details:");
+  console.log("  Raw IDs param:", rawIds);
+  console.log("  Normalized IDs:", ids);
+  console.log("  ID count:", ids.split("%2C").length);
+  console.log("  JWT token length:", jwt.length);
+  console.log("  W-BH present:", !!bh);
+  console.log("⏰ Request started at:", new Date().toISOString());
+  console.log("=".repeat(80));
 
   try {
     // Make upstream request with all required headers
@@ -102,26 +117,69 @@ export const handlePdfProxy: RequestHandler = async (req, res) => {
     }
 
     if (!response.ok) {
-      console.error(
-        "[proxy] upstream error",
-        response.status,
-        buf.slice(0, 200).toString(),
-      );
+      console.log("=".repeat(80));
+      console.log("❌ UPSTREAM ERROR FROM ADMIN.FARGO.UZ");
+      console.log("=".repeat(80));
+      console.log("🚨 Status:", response.status, response.statusText);
+      console.log("📄 Content-Type:", response.headers.get("content-type"));
+      console.log("📊 Error Details:");
+      console.log("  Response size:", buf.length, "bytes");
+      console.log("  Request duration:", ms, "ms");
+      console.log("📝 Error Response Body:");
+      console.log(buf.slice(0, 500).toString()); // Show more of error response
+      console.log("🔗 Failed URL:", url);
+      console.log("⏰ Error occurred at:", new Date().toISOString());
+      console.log("=".repeat(80));
+
       res.status(response.status).send(buf.toString());
       return;
     }
 
-    console.log("[proxy] ok", {
-      status: response.status,
-      bytes: buf.length,
-      ms,
-      idsCount: ids.split("%2C").length,
-    });
+    // Detailed response logging
+    console.log("=".repeat(80));
+    console.log("📥 UPSTREAM RESPONSE FROM ADMIN.FARGO.UZ");
+    console.log("=".repeat(80));
+    console.log("✅ Status:", response.status, response.statusText);
+    console.log("📄 Content-Type:", response.headers.get("content-type"));
+    console.log("📊 Content-Length:", response.headers.get("content-length"));
+    console.log("📋 Response Details:");
+    console.log("  Buffer size:", buf.length, "bytes");
+    console.log("  Request duration:", ms, "ms");
+    console.log("  IDs processed:", ids.split("%2C").length);
+    console.log("  PDF format check:", buf.slice(0, 5).toString().startsWith("%PDF-") ? "✅ Valid PDF" : "❌ Not PDF format");
+
+    if (buf.length < 1000) {
+      console.log("⚠️  WARNING: Very small response, might be error page");
+      console.log("📝 Response preview:", buf.slice(0, 200).toString());
+    }
+
+    console.log("⏰ Response completed at:", new Date().toISOString());
+    console.log("=".repeat(80));
 
     res.setHeader("Content-Type", "application/pdf");
     res.end(buf);
   } catch (error) {
-    console.error("[proxy] fetch error:", error);
+    const ms = Date.now() - t0;
+    console.log("=".repeat(80));
+    console.log("💥 FETCH ERROR TO ADMIN.FARGO.UZ");
+    console.log("=".repeat(80));
+    console.log("🚨 Error type:", error instanceof Error ? error.constructor.name : typeof error);
+    console.log("📝 Error message:", error instanceof Error ? error.message : String(error));
+    console.log("🔗 Target URL:", url);
+    console.log("⏰ Error after:", ms, "ms");
+    console.log("📊 Request state:");
+    console.log("  IDs:", ids);
+    console.log("  Token present:", !!jwt);
+    console.log("  W-BH present:", !!bh);
+
+    if (error instanceof Error && error.stack) {
+      console.log("📚 Stack trace:");
+      console.log(error.stack);
+    }
+
+    console.log("⏰ Error occurred at:", new Date().toISOString());
+    console.log("=".repeat(80));
+
     res.status(500).json({
       error: "Failed to fetch PDF from upstream",
       details: error instanceof Error ? error.message : "Unknown error",

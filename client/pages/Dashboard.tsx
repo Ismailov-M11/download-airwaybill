@@ -22,7 +22,7 @@ import {
 import ViewPdfButton from "@/components/ViewPdfButton";
 
 const Dashboard: React.FC = () => {
-  const { logout } = useAuth();
+  const { logout, getTokens } = useAuth();
 
   // Application state
   const [orderNumbers, setOrderNumbers] = useState("");
@@ -120,11 +120,11 @@ const Dashboard: React.FC = () => {
 
   // Load token from localStorage on component mount
   React.useEffect(() => {
-    const savedToken = localStorage.getItem("shipox_token");
+    const { idToken: savedToken } = getTokens();
     if (savedToken) {
       setIdToken(savedToken);
     }
-  }, []);
+  }, [getTokens]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -234,6 +234,7 @@ const Dashboard: React.FC = () => {
                 <ViewPdfButton
                   idsEncoded={idsEncoded}
                   idToken={idToken}
+                  wBh={getTokens().wBh}
                   disabled={foundIds.length === 0}
                   className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                   onError={(error) => {

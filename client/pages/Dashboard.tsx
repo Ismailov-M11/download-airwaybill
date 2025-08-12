@@ -175,20 +175,6 @@ const Dashboard: React.FC = () => {
             <CardDescription>
               Search orders through Shipox API with optimization and caching,
               download PDF airwaybills from admin.fargo.uz
-              {!getWBhToken() && (
-                <div className="mt-2 text-amber-600 text-sm">
-                  ⚠️ For PDF generation, visit{" "}
-                  <a
-                    href="https://admin.fargo.uz"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline"
-                  >
-                    admin.fargo.uz
-                  </a>{" "}
-                  first to set required cookies
-                </div>
-              )}
             </CardDescription>
           </CardHeader>
         </Card>

@@ -20,6 +20,7 @@ import {
   clearOrderCache,
 } from "@/lib/orderSearch";
 import ViewPdfButton from "@/components/ViewPdfButton";
+import { getWBhToken } from "@/lib/cookieUtils";
 
 const Dashboard: React.FC = () => {
   const { logout, getTokens } = useAuth();
@@ -234,7 +235,7 @@ const Dashboard: React.FC = () => {
                 <ViewPdfButton
                   idsEncoded={idsEncoded}
                   idToken={idToken}
-                  wBh={getTokens().wBh}
+                  wBh={getWBhToken() || undefined}
                   disabled={foundIds.length === 0}
                   className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                   onError={(error) => {

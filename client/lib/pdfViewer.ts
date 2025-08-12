@@ -72,9 +72,20 @@ export async function openPdfInNewTabViaProxy(
   // Get PDF as blob
   const blob = await response.blob();
 
-  // Quick sanity check for PDF content
+  // Check for empty or invalid PDF
   if (blob.size < 1000) {
     console.warn("⚠️ PDF blob is very small, might be empty or error page");
+    throw new Error("Empty PDF received - authentication may have failed. Please try logging out and back in.");
+  }
+
+  // Additional check for actual PDF content
+  const arrayBuffer = await blob.arrayBuffer();
+  const uint8Array = new Uint8Array(arrayBuffer);
+  const pdfHeader = String.fromCharCode(...uint8Array.slice(0, 4));
+
+  if (pdfHeader !== "%PDF") {
+    console.warn("⚠️ Response is not a valid PDF format");
+    throw new Error("Invalid PDF format received - the server may have returned an error page instead of a PDF.");
   }
 
   // Create blob URL for viewing

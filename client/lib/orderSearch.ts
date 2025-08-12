@@ -323,16 +323,17 @@ export async function collectIdsPaged(
   // Step 5: Create encoded string for PDF (strictly no spaces, %2C separator)
   const idsEncoded = uniqueIds.map(String).join("%2C");
 
-  // Step 6: Compute not found by checking which requested order numbers have matching items in API response
-  const foundOrderNumbers = new Set(
-    allAPIResponses
-      .filter(
-        (item) => item.order_number !== undefined && item.order_number !== null,
-      )
-      .map((item) => String(item.order_number)),
-  );
+  // Step 6: Simplified "not found" logic
+  // Since we take ALL IDs from API response regardless of order number matching,
+  // we consider the search successful if we got any results back
+  const notFound: string[] = [];
 
-  const notFound = orderNumbers.filter((num) => !foundOrderNumbers.has(num));
+  // Only mark as "not found" if we got no results at all for this search
+  if (uniqueIds.length === 0 && orderNumbers.length > 0) {
+    // If no IDs found, mark all requested numbers as not found
+    notFound.push(...orderNumbers);
+  }
+  // Otherwise, if we got IDs back, the search was successful (even if order numbers don't match)
 
   if (DEBUG) {
     console.log(

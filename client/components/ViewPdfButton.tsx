@@ -84,7 +84,11 @@ export default function ViewPdfButton({
         errorMessage = "Session expired - please log in again";
       } else if (e?.message?.startsWith("PDF_FAILED_")) {
         const status = e.message.replace("PDF_FAILED_", "");
-        errorMessage = `PDF generation failed (${status}) - check DevTools Network tab for X-Dbg-* headers`;
+        if (status === "200") {
+          errorMessage = "PDF is empty - authentication cookies may be missing. Try logging out and back in.";
+        } else {
+          errorMessage = `PDF generation failed (${status}) - check DevTools Network tab for X-Dbg-* headers`;
+        }
       } else if (e?.message?.includes("popup blocked")) {
         errorMessage = "Popup blocked - please allow popups for this site";
       } else if (e?.message) {

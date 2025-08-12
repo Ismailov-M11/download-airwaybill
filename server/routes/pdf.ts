@@ -37,7 +37,9 @@ export const handlePdfProxy: RequestHandler = async (req, res) => {
   const ids = normalizeIdsParam(rawIds);
 
   const jwt = String(req.headers["x-auth-token"] || "");
-  const bh = String(req.headers["x-bh"] || req.headers["x-w-bh"] || process.env.W_BH || "");
+  const bh = String(
+    req.headers["x-bh"] || req.headers["x-w-bh"] || process.env.W_BH || "",
+  );
 
   // Validate required parameters
   if (!ids) {

@@ -11,7 +11,7 @@ export function getCookie(name: string): string | null {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
   if (parts.length === 2) {
-    return parts.pop()?.split(';').shift() || null;
+    return parts.pop()?.split(";").shift() || null;
   }
   return null;
 }
@@ -22,7 +22,7 @@ export function getCookie(name: string): string | null {
  * @returns w-bh cookie value or null if not found
  */
 export function getWBhCookie(): string | null {
-  return getCookie('w-bh');
+  return getCookie("w-bh");
 }
 
 /**
@@ -31,7 +31,7 @@ export function getWBhCookie(): string | null {
  */
 export function storeWBhToken(wBhValue: string): void {
   if (wBhValue) {
-    localStorage.setItem('w_bh_token', wBhValue);
+    localStorage.setItem("w_bh_token", wBhValue);
   }
 }
 
@@ -40,7 +40,7 @@ export function storeWBhToken(wBhValue: string): void {
  * @returns Stored w-bh token or null
  */
 export function getStoredWBhToken(): string | null {
-  return localStorage.getItem('w_bh_token');
+  return localStorage.getItem("w_bh_token");
 }
 
 /**
@@ -55,7 +55,7 @@ export function getWBhToken(): string | null {
     storeWBhToken(cookieValue);
     return cookieValue;
   }
-  
+
   // Fallback to localStorage (cross-origin)
   return getStoredWBhToken();
 }

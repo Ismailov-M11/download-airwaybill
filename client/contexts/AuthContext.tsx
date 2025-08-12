@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -12,40 +12,48 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   useEffect(() => {
-    const shipoxToken = localStorage.getItem('shipox_token');
+    const shipoxToken = localStorage.getItem("shipox_token");
     if (shipoxToken) {
       setIsAuthenticated(true);
     }
   }, []);
 
   const getTokens = () => {
-    const idToken = localStorage.getItem('shipox_token') || '';
-    const wBh = localStorage.getItem('w_bh_token') || undefined;
+    const idToken = localStorage.getItem("shipox_token") || "";
+    const wBh = localStorage.getItem("w_bh_token") || undefined;
     return { idToken, wBh };
   };
 
-  const login = async (username: string, password: string): Promise<boolean> => {
+  const login = async (
+    username: string,
+    password: string,
+  ): Promise<boolean> => {
     try {
-      const response = await fetch('https://prodapi.shipox.com/api/v1/authenticate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json;charset=utf-8',
+      const response = await fetch(
+        "https://prodapi.shipox.com/api/v1/authenticate",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json;charset=utf-8",
+          },
+          body: JSON.stringify({
+            username,
+            password,
+            remember_me: false,
+          }),
         },
-        body: JSON.stringify({
-          username,
-          password,
-          remember_me: false,
-        }),
-      });
+      );
 
       if (!response.ok) {
         return false;
@@ -57,7 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
 
-      localStorage.setItem('shipox_token', data.data.id_token);
+      localStorage.setItem("shipox_token", data.data.id_token);
       setIsAuthenticated(true);
       return true;
     } catch (error) {
@@ -67,8 +75,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     setIsAuthenticated(false);
-    localStorage.removeItem('shipox_token');
-    localStorage.removeItem('w_bh_token');
+    localStorage.removeItem("shipox_token");
+    localStorage.removeItem("w_bh_token");
   };
 
   return (

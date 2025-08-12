@@ -329,10 +329,25 @@ export async function collectIdsPaged(
     console.log(
       `📋 Encoded IDs: ${idsEncoded.substring(0, 100)}${idsEncoded.length > 100 ? "..." : ""}`,
     );
+
+    // Debug info for order number matching
+    console.log(`🔍 Debug info:`);
+    console.log(`  Requested order numbers: ${orderNumbers.length}`);
+    console.log(`  API returned items: ${allAPIResponses.length}`);
+    console.log(`  Items with order_number field: ${allAPIResponses.filter(item => item.order_number !== undefined).length}`);
+    console.log(`  Unique found order numbers: ${foundOrderNumbers.size}`);
+
+    if (foundOrderNumbers.size > 0) {
+      const foundSample = Array.from(foundOrderNumbers).slice(0, 3);
+      console.log(`  Sample found order numbers: ${foundSample.join(", ")}`);
+    }
+
     if (notFound.length > 0) {
       console.log(
         `❌ Not found globally: ${notFound.slice(0, 5).join(", ")}${notFound.length > 5 ? ` ... and ${notFound.length - 5} more` : ""}`,
       );
+    } else {
+      console.log(`✅ All order numbers found!`);
     }
   }
 

@@ -152,6 +152,16 @@ async function searchBatchWithPagination(
         console.log(
           `📦 Page ${page}: ${list.length} items, total: ${total}, collected: ${totalCollected}`,
         );
+
+        // Debug first item structure to understand API response format
+        if (list.length > 0 && page === 0) {
+          const firstItem = list[0];
+          console.log(`🔍 First API item structure:`, {
+            id: firstItem.id,
+            order_number: firstItem.order_number,
+            availableFields: Object.keys(firstItem).slice(0, 10) // Show first 10 fields
+          });
+        }
       }
 
       // Add items to collection

@@ -69,12 +69,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const idToken = data.data.id_token;
       localStorage.setItem("shipox_token", idToken);
 
-      // Step 2: Authenticate with admin.fargo.uz to get w-bh cookie
+      // Step 2: Get w-bh token from server endpoint
       try {
-        await authenticateWithFargo(idToken);
+        await fetchWBhToken(idToken);
       } catch (fargoError) {
-        console.warn("Failed to authenticate with Fargo admin, PDF generation may not work:", fargoError);
-        // Don't fail the entire login if Fargo auth fails
+        console.warn("Failed to get w-bh token, PDF generation may not work:", fargoError);
+        // Don't fail the entire login if w-bh fetch fails
       }
 
       setIsAuthenticated(true);
@@ -85,76 +85,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   /**
-   * Authenticate with admin.fargo.uz to capture the w-bh cookie
+   * Fetch w-bh token from server endpoint
    * This ensures PDF generation will work without manual cookie setup
    */
-  const authenticateWithFargo = async (idToken: string): Promise<void> => {
+  const fetchWBhToken = async (idToken: string): Promise<void> => {
     try {
-      // Create a hidden iframe to visit admin.fargo.uz with the token
-      // This will set the required cookies in the browser
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.style.width = '1px';
-      iframe.style.height = '1px';
-
-      // Set up promise to wait for iframe load
-      const loadPromise = new Promise<void>((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          cleanup();
-          reject(new Error('Fargo authentication timeout'));
-        }, 10000); // 10 second timeout
-
-        const cleanup = () => {
-          clearTimeout(timeout);
-          iframe.removeEventListener('load', onLoad);
-          iframe.removeEventListener('error', onError);
-          if (iframe.parentNode) {
-            iframe.parentNode.removeChild(iframe);
-          }
-        };
-
-        const onLoad = () => {
-          // Try to read cookies after iframe loads
-          setTimeout(() => {
-            try {
-              // Extract w-bh cookie and store it
-              const wBhCookie = document.cookie
-                .split('; ')
-                .find(row => row.startsWith('w-bh='))
-                ?.split('=')[1];
-
-              if (wBhCookie) {
-                localStorage.setItem('w_bh_token', wBhCookie);
-                console.log('✅ Successfully captured w-bh cookie from admin.fargo.uz');
-              } else {
-                console.warn('⚠️ Could not find w-bh cookie after Fargo authentication');
-              }
-            } catch (cookieError) {
-              console.warn('⚠️ Error reading cookies from Fargo iframe:', cookieError);
-            }
-
-            cleanup();
-            resolve();
-          }, 1000); // Wait 1 second for cookies to be set
-        };
-
-        const onError = () => {
-          cleanup();
-          reject(new Error('Failed to load Fargo admin page'));
-        };
-
-        iframe.addEventListener('load', onLoad);
-        iframe.addEventListener('error', onError);
+      const response = await fetch('/api/auth/fargo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Auth-Token': idToken,
+        },
+        body: JSON.stringify({ action: 'get_w_bh' }),
       });
 
-      // Navigate iframe to admin.fargo.uz with authentication
-      // This should set the required cookies
-      iframe.src = `https://admin.fargo.uz/login?token=${encodeURIComponent(idToken)}`;
-      document.body.appendChild(iframe);
-
-      await loadPromise;
+      if (response.ok) {
+        const data = await response.json();
+        if (data.wBh) {
+          localStorage.setItem('w_bh_token', data.wBh);
+          console.log('✅ Successfully obtained w-bh token from server');
+        } else {
+          console.warn('⚠️ Server did not return w-bh token');
+        }
+      } else {
+        console.warn('⚠️ Failed to get w-bh token from server:', response.status);
+      }
     } catch (error) {
-      throw new Error(`Fargo authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(`Failed to fetch w-bh token: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 

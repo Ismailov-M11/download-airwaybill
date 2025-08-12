@@ -4,6 +4,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
+  getTokens: () => { idToken: string; wBh?: string };
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,6 +26,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAuthenticated(true);
     }
   }, []);
+
+  const getTokens = () => {
+    const idToken = localStorage.getItem('shipox_token') || '';
+    const wBh = localStorage.getItem('w_bh_token') || undefined;
+    return { idToken, wBh };
+  };
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
@@ -61,10 +68,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     setIsAuthenticated(false);
     localStorage.removeItem('shipox_token');
+    localStorage.removeItem('w_bh_token');
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, login, logout, getTokens }}>
       {children}
     </AuthContext.Provider>
   );

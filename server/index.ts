@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
 import { handlePdfProxy, handlePdfPreview } from "./routes/pdf";
+import { handleFargoAuth } from "./routes/auth";
 
 export function createServer() {
   const app = express();
@@ -25,6 +26,9 @@ export function createServer() {
 
   // PDF preview endpoint for viewing PDFs inline in browser
   app.get("/api/pdf/preview", handlePdfPreview);
+
+  // Fargo authentication endpoint to get w-bh token
+  app.post("/api/auth/fargo", handleFargoAuth);
 
   return app;
 }

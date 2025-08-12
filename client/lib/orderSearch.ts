@@ -343,26 +343,24 @@ export async function collectIdsPaged(
       `📋 Encoded IDs: ${idsEncoded.substring(0, 100)}${idsEncoded.length > 100 ? "..." : ""}`,
     );
 
-    // Debug info for order number matching
+    // Debug info
     console.log(`🔍 Debug info:`);
     console.log(`  Requested order numbers: ${orderNumbers.length}`);
     console.log(`  API returned items: ${allAPIResponses.length}`);
-    console.log(
-      `  Items with order_number field: ${allAPIResponses.filter((item) => item.order_number !== undefined).length}`,
-    );
-    console.log(`  Unique found order numbers: ${foundOrderNumbers.size}`);
+    console.log(`  Extracted unique IDs: ${uniqueIds.length}`);
 
-    if (foundOrderNumbers.size > 0) {
-      const foundSample = Array.from(foundOrderNumbers).slice(0, 3);
-      console.log(`  Sample found order numbers: ${foundSample.join(", ")}`);
+    if (allAPIResponses.length > 0) {
+      const firstItem = allAPIResponses[0];
+      console.log(`  Sample API item:`, {
+        id: firstItem.id,
+        order_number: firstItem.order_number
+      });
     }
 
     if (notFound.length > 0) {
-      console.log(
-        `❌ Not found globally: ${notFound.slice(0, 5).join(", ")}${notFound.length > 5 ? ` ... and ${notFound.length - 5} more` : ""}`,
-      );
+      console.log(`❌ Search failed: no results returned from API`);
     } else {
-      console.log(`✅ All order numbers found!`);
+      console.log(`✅ Search successful: ${uniqueIds.length} IDs extracted from API response`);
     }
   }
 

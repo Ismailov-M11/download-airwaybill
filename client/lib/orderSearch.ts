@@ -268,7 +268,8 @@ export async function collectIdsPaged(
 
   // Step 3: Process batches with controlled concurrency
   let allIds: number[] = [];
-  let allFoundOrderNumbers: string[] = [];
+  let allBatchRequests: string[] = []; // Track what we actually requested
+  let allAPIResponses: OrderItem[] = []; // Track what API returned
 
   // Process batches in chunks to control concurrency
   for (let i = 0; i < batches.length; i += concurrency) {
@@ -286,15 +287,14 @@ export async function collectIdsPaged(
         batch,
         token,
       );
-      // Don't compute notFound per batch - we'll do it globally
+      // Extract IDs from all returned items
       const { ids } = processBatchResults(items, requestedSet);
 
-      // Collect found order numbers for global notFound calculation
-      const foundNumbers = items
-        .filter((item) => item.order_number !== undefined)
-        .map((item) => String(item.order_number));
-
-      return { ids, foundNumbers };
+      return {
+        ids,
+        items,
+        requestedBatch: batch
+      };
     });
 
     const chunkResults = await Promise.all(chunkPromises);
@@ -302,7 +302,8 @@ export async function collectIdsPaged(
     // Accumulate results
     for (const result of chunkResults) {
       allIds = allIds.concat(result.ids);
-      allFoundOrderNumbers = allFoundOrderNumbers.concat(result.foundNumbers);
+      allAPIResponses = allAPIResponses.concat(result.items);
+      allBatchRequests = allBatchRequests.concat(result.requestedBatch);
     }
   }
 
@@ -312,9 +313,14 @@ export async function collectIdsPaged(
   // Step 5: Create encoded string for PDF (strictly no spaces, %2C separator)
   const idsEncoded = uniqueIds.map(String).join("%2C");
 
-  // Step 6: Compute not found globally (not per batch)
-  const allFoundSet = new Set(allFoundOrderNumbers);
-  const notFound = orderNumbers.filter((num) => !allFoundSet.has(num));
+  // Step 6: Compute not found by checking which requested order numbers have matching items in API response
+  const foundOrderNumbers = new Set(
+    allAPIResponses
+      .filter((item) => item.order_number !== undefined && item.order_number !== null)
+      .map((item) => String(item.order_number))
+  );
+
+  const notFound = orderNumbers.filter((num) => !foundOrderNumbers.has(num));
 
   if (DEBUG) {
     console.log(

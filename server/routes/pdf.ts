@@ -146,7 +146,12 @@ export const handlePdfProxy: RequestHandler = async (req, res) => {
     console.log("  Buffer size:", buf.length, "bytes");
     console.log("  Request duration:", ms, "ms");
     console.log("  IDs processed:", ids.split("%2C").length);
-    console.log("  PDF format check:", buf.slice(0, 5).toString().startsWith("%PDF-") ? "✅ Valid PDF" : "❌ Not PDF format");
+    console.log(
+      "  PDF format check:",
+      buf.slice(0, 5).toString().startsWith("%PDF-")
+        ? "✅ Valid PDF"
+        : "❌ Not PDF format",
+    );
 
     if (buf.length < 1000) {
       console.log("⚠️  WARNING: Very small response, might be error page");
@@ -163,8 +168,14 @@ export const handlePdfProxy: RequestHandler = async (req, res) => {
     console.log("=".repeat(80));
     console.log("💥 FETCH ERROR TO ADMIN.FARGO.UZ");
     console.log("=".repeat(80));
-    console.log("🚨 Error type:", error instanceof Error ? error.constructor.name : typeof error);
-    console.log("📝 Error message:", error instanceof Error ? error.message : String(error));
+    console.log(
+      "🚨 Error type:",
+      error instanceof Error ? error.constructor.name : typeof error,
+    );
+    console.log(
+      "📝 Error message:",
+      error instanceof Error ? error.message : String(error),
+    );
     console.log("🔗 Target URL:", url);
     console.log("⏰ Error after:", ms, "ms");
     console.log("📊 Request state:");

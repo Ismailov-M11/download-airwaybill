@@ -85,7 +85,8 @@ export default function ViewPdfButton({
       } else if (e?.message?.startsWith("PDF_FAILED_")) {
         const status = e.message.replace("PDF_FAILED_", "");
         if (status === "200") {
-          errorMessage = "PDF is empty - authentication cookies may be missing. Try logging out and back in.";
+          errorMessage =
+            "PDF is empty - authentication cookies may be missing. Try logging out and back in.";
         } else {
           errorMessage = `PDF generation failed (${status}) - check DevTools Network tab for X-Dbg-* headers`;
         }

@@ -73,7 +73,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         await fetchWBhToken(idToken);
       } catch (fargoError) {
-        console.warn("Failed to get w-bh token, PDF generation may not work:", fargoError);
+        console.warn(
+          "Failed to get w-bh token, PDF generation may not work:",
+          fargoError,
+        );
         // Don't fail the entire login if w-bh fetch fails
       }
 
@@ -90,28 +93,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
    */
   const fetchWBhToken = async (idToken: string): Promise<void> => {
     try {
-      const response = await fetch('/api/auth/fargo', {
-        method: 'POST',
+      const response = await fetch("/api/auth/fargo", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'X-Auth-Token': idToken,
+          "Content-Type": "application/json",
+          "X-Auth-Token": idToken,
         },
-        body: JSON.stringify({ action: 'get_w_bh' }),
+        body: JSON.stringify({ action: "get_w_bh" }),
       });
 
       if (response.ok) {
         const data = await response.json();
         if (data.wBh) {
-          localStorage.setItem('w_bh_token', data.wBh);
-          console.log('✅ Successfully obtained w-bh token from server');
+          localStorage.setItem("w_bh_token", data.wBh);
+          console.log("✅ Successfully obtained w-bh token from server");
         } else {
-          console.warn('⚠️ Server did not return w-bh token');
+          console.warn("⚠️ Server did not return w-bh token");
         }
       } else {
-        console.warn('⚠️ Failed to get w-bh token from server:', response.status);
+        console.warn(
+          "⚠️ Failed to get w-bh token from server:",
+          response.status,
+        );
       }
     } catch (error) {
-      throw new Error(`Failed to fetch w-bh token: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to fetch w-bh token: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   };
 

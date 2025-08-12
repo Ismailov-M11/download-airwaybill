@@ -75,7 +75,9 @@ export async function openPdfInNewTabViaProxy(
   // Check for empty or invalid PDF
   if (blob.size < 1000) {
     console.warn("⚠️ PDF blob is very small, might be empty or error page");
-    throw new Error("Empty PDF received - authentication may have failed. Please try logging out and back in.");
+    throw new Error(
+      "Empty PDF received - authentication may have failed. Please try logging out and back in.",
+    );
   }
 
   // Additional check for actual PDF content
@@ -85,7 +87,9 @@ export async function openPdfInNewTabViaProxy(
 
   if (pdfHeader !== "%PDF") {
     console.warn("⚠️ Response is not a valid PDF format");
-    throw new Error("Invalid PDF format received - the server may have returned an error page instead of a PDF.");
+    throw new Error(
+      "Invalid PDF format received - the server may have returned an error page instead of a PDF.",
+    );
   }
 
   // Create blob URL for viewing

@@ -43,7 +43,7 @@ export async function openPdfInNewTabViaProxy(
   const response = await fetch(`/api/pdf?ids=${idsEncoded}`, {
     headers: {
       "X-Auth-Token": idToken,
-      ...(wBh && { "X-BH": wBh }), // Include w-bh header if provided
+      ...(wBh && { "X-BH": wBh, "X-W-BH": wBh }), // Send w-bh via multiple header names for compatibility
       Accept: "application/pdf",
     },
   });
@@ -115,9 +115,11 @@ export async function openPdfInNewTabSafariFallback(
     } else {
       // Cross-origin: fetch via proxy and load blob
       // Note: idsEncoded is already properly encoded, do NOT encode again
+      const wBhFromCookie = document.cookie.split('; ').find(row => row.startsWith('w-bh='))?.split('=')[1];
       const response = await fetch(`/api/pdf?ids=${idsEncoded}`, {
         headers: {
           "X-Auth-Token": idToken,
+          ...(wBhFromCookie && { "X-BH": wBhFromCookie, "X-W-BH": wBhFromCookie }),
           Accept: "application/pdf",
         },
       });

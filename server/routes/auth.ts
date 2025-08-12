@@ -38,18 +38,37 @@ async function getWBhToken(req: any, res: any, idToken: string): Promise<void> {
   try {
     console.log("🔐 Attempting to get w-bh token from admin.fargo.uz");
 
-    // Try to access a Fargo admin endpoint that would set the w-bh cookie
-    // We'll use the orders endpoint as it's likely to set the required cookies
-    const fargoResponse = await fetch("https://admin.fargo.uz/api/orders?limit=1", {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${idToken}`,
-        "Cookie": `w-jwt=${idToken}`,
-        "Accept": "application/json",
-        "User-Agent": "Mozilla/5.0 (compatible; Airwaybill-System/1.0)",
-        "Referer": "https://admin.fargo.uz/dashboard"
+    // Method 1: Try to access a Fargo admin endpoint that would set the w-bh cookie
+    let fargoResponse;
+    try {
+      fargoResponse = await fetch("https://admin.fargo.uz/api/orders?limit=1", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${idToken}`,
+          "Cookie": `w-jwt=${idToken}`,
+          "Accept": "application/json",
+          "User-Agent": "Mozilla/5.0 (compatible; Airwaybill-System/1.0)",
+          "Referer": "https://admin.fargo.uz/dashboard"
+        }
+      });
+    } catch (fetchError) {
+      console.warn("⚠️ Failed to fetch from Fargo API:", fetchError);
+
+      // Method 2: Try alternative endpoint
+      try {
+        fargoResponse = await fetch("https://admin.fargo.uz/dashboard", {
+          method: "GET",
+          headers: {
+            "Cookie": `w-jwt=${idToken}`,
+            "Accept": "text/html,application/xhtml+xml",
+            "User-Agent": "Mozilla/5.0 (compatible; Airwaybill-System/1.0)"
+          }
+        });
+      } catch (secondError) {
+        console.warn("⚠️ Failed to fetch from Fargo dashboard:", secondError);
+        throw new Error("Unable to connect to admin.fargo.uz");
       }
-    });
+    }
 
     console.log("📡 Fargo API response:", fargoResponse.status, fargoResponse.statusText);
 

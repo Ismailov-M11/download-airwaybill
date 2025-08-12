@@ -4,7 +4,7 @@
  */
 
 // Debug flag for development logging
-const DEBUG = true; // Temporarily enabled to debug "not found" counter
+const DEBUG = false;
 
 // Types for order items - simplified based on actual API structure
 type OrderItem = {
